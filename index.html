@@ -741,11 +741,10 @@ function startScanner() {
 
 // ── AUTO-LOAD SAVED KEY ──
 window.addEventListener('load', () => {
-  const saved = localStorage.getItem('finnhub_key');
-  if (saved) {
-    document.getElementById('apiKey').value = saved;
-    startScanner();
-  }
+  const baked = 'd7ubki9r01qnv95n0argd7ubki9r01qnv95n0as0';
+  const saved = localStorage.getItem('finnhub_key') || baked;
+  document.getElementById('apiKey').value = saved;
+  startScanner();
 });
 </script>
 </body>
