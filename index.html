@@ -386,6 +386,7 @@ function calcBB(closes,period=20){
   return{upper:mean+2*std,middle:mean,lower:mean-2*std};
 }
 function calcSMA(closes,period=200){
+  if(closes.length<period) return null;
   const sl=closes.slice(-period);
   return sl.reduce((a,b)=>a+b,0)/sl.length;
 }
@@ -438,7 +439,7 @@ function getPlay(score,ma200Above,caution){
 // ── PHASE 1: Fetch indicators from Yahoo Finance (once per session) ──
 async function fetchIndicators(tk){
   try{
-    const url=`https://query1.finance.yahoo.com/v8/finance/chart/${tk.s}?interval=1d&range=1y`;
+    const url=`https://query1.finance.yahoo.com/v8/finance/chart/${tk.s}?interval=1d&range=2y`;
     const res=await fetch(PROXY+encodeURIComponent(url));
     const json=await res.json();
     const result=json?.chart?.result?.[0];
@@ -454,23 +455,23 @@ async function fetchIndicators(tk){
   }catch{return{rsi:null,bbPos:null,ma200:null};}
 }
 
-// ── PHASE 2: Fetch ALL prices at once via Yahoo Finance batch ──
+// ── PHASE 2: Fetch ALL prices via Yahoo Finance Finnhub quote (one per stock, fast) ──
 async function fetchAllPrices(){
-  try{
-    const symbols=STOCKS.map(s=>s.s).join(',');
-    const url=`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`;
-    const res=await fetch(PROXY+encodeURIComponent(url));
-    const json=await res.json();
-    const quotes=json?.quoteResponse?.result||[];
-    const map={};
-    quotes.forEach(q=>{
-      const price=q.regularMarketPrice||0;
-      const prev=q.regularMarketPreviousClose||0;
+  const map={};
+  const allSyms=STOCKS.map(s=>s.s);
+  await Promise.all(allSyms.map(async sym=>{
+    try{
+      const url=`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=5d`;
+      const res=await fetch(PROXY+encodeURIComponent(url));
+      const json=await res.json();
+      const meta=json?.chart?.result?.[0]?.meta||{};
+      const price=meta.regularMarketPrice||0;
+      const prev=meta.chartPreviousClose||0;
       const chg=prev>0?((price-prev)/prev*100):0;
-      map[q.symbol]={price,chg};
-    });
-    return map;
-  }catch{return {};}
+      map[sym]={price,chg};
+    }catch(e){}
+  }));
+  return map;
 }
 
 // ── INITIAL FULL LOAD ──
@@ -562,9 +563,9 @@ function renderTable(data){
       :'<span style="color:var(--muted)">—</span>';
     const sb=r.score>=4?'<span class="sig-badge buy">BUY</span>':r.score<=-4?'<span class="sig-badge sell">SELL</span>':'';
     const ci=r.caution?'<span title="Higher volatility"> ⚠️</span>':'';
-    const tvUrl=`https://www.tradingview.com/chart/?symbol=${r.s}&interval=D&studies=RSI@tv-basicstudies,BB@tv-basicstudies,MASimple@tv-basicstudies`;
+    const tvUrl=`https://www.tradingview.com/chart/?symbol=${r.s}&interval=D&studies=RSI@tv-basicstudies,BB@tv-basicstudies,MAExp@tv-basicstudies`;
     html+=`<tr class="${rowCls}${r.caution?' caution-row':''}">
-      <td><div class="sym"><a href="${tvUrl}" target="_blank" style="color:inherit;text-decoration:none;" title="Open TradingView chart">${r.s}</a>${ci}${sb}</div><div class="sym-name">${r.name} <a href="${tvUrl}" target="_blank" style="color:var(--muted2);font-size:10px;text-decoration:none;">📈 Chart</a></div></td>
+      <td><div class="sym"><a href="${tvUrl}" target="_blank" style="color:inherit;text-decoration:none;" title="Open TradingView chart">${r.s}</a>${ci}${sb}</div><div class="sym-name">${r.name} <a href="${tvUrl}" target="_blank" style="background:rgba(108,99,247,0.2);color:#a89fff;border:1px solid rgba(108,99,247,0.4);border-radius:4px;padding:1px 7px;font-size:10px;text-decoration:none;font-weight:700;">📈 CHART</a></div></td>
       <td class="price-cell">${pf}${liveDot}</td>
       <td class="chg-cell ${cc}">${cf}</td>
       <td>${rsiH}</td><td>${bbH}</td><td>${maH}</td>
@@ -588,7 +589,7 @@ function renderCards(data){
     const pf=r.price>0?'$'+r.price.toFixed(2):'—';
     const cf=r.price>0?(r.chg>=0?'+':'')+r.chg.toFixed(2)+'%':'—';
     const cc=r.chg<0?'neg':r.chg>0?'pos':'flat';
-    const tvUrl=`https://www.tradingview.com/chart/?symbol=${r.s}&interval=D&studies=RSI@tv-basicstudies,BB@tv-basicstudies,MASimple@tv-basicstudies`;
+    const tvUrl=`https://www.tradingview.com/chart/?symbol=${r.s}&interval=D&studies=RSI@tv-basicstudies,BB@tv-basicstudies,MAExp@tv-basicstudies`;
     html+=`<div class="card ${rowCls}">
       <div class="card-top">
         <div><div class="card-sym"><a href="${tvUrl}" target="_blank" style="color:inherit;text-decoration:none;">${r.s}</a>${r.caution?' ⚠️':''}</div><div class="card-name">${r.name} <a href="${tvUrl}" target="_blank" style="color:var(--muted2);font-size:10px;">📈 Chart</a></div></div>
