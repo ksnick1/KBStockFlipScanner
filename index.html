@@ -461,7 +461,7 @@ async function fetchAllPrices(){
   const allSyms=STOCKS.map(s=>s.s);
   await Promise.all(allSyms.map(async sym=>{
     try{
-      const url=`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=5d`;
+      const url=`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`;
       const res=await fetch(PROXY+encodeURIComponent(url));
       const json=await res.json();
       const meta=json?.chart?.result?.[0]?.meta||{};
@@ -565,7 +565,7 @@ function renderTable(data){
     const ci=r.caution?'<span title="Higher volatility"> ⚠️</span>':'';
     const tvUrl=`https://www.tradingview.com/chart/?symbol=${r.s}&interval=D&studies=RSI@tv-basicstudies,BB@tv-basicstudies,MAExp@tv-basicstudies`;
     html+=`<tr class="${rowCls}${r.caution?' caution-row':''}">
-      <td><div class="sym"><a href="${tvUrl}" target="_blank" style="color:inherit;text-decoration:none;" title="Open TradingView chart">${r.s}</a>${ci}${sb}</div><div class="sym-name">${r.name} <a href="${tvUrl}" target="_blank" style="background:rgba(108,99,247,0.2);color:#a89fff;border:1px solid rgba(108,99,247,0.4);border-radius:4px;padding:1px 7px;font-size:10px;text-decoration:none;font-weight:700;">📈 CHART</a></div></td>
+      <td><div class="sym">${r.s}${ci}${sb} <a href="${tvUrl}" target="_blank" style="background:#6c63f7;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px;text-decoration:none;font-weight:700;margin-left:6px;">📈</a></div><div class="sym-name">${r.name}</div></td>
       <td class="price-cell">${pf}${liveDot}</td>
       <td class="chg-cell ${cc}">${cf}</td>
       <td>${rsiH}</td><td>${bbH}</td><td>${maH}</td>
