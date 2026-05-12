@@ -459,8 +459,9 @@ async function fetchIndicators(tk){
 async function fetchAllPrices(){
   const map={};
   const allSyms=STOCKS.map(s=>s.s);
-  await Promise.all(allSyms.map(async sym=>{
+  for(let i=0;i<allSyms.length;i++){
     try{
+      const sym=allSyms[i];
       const url=`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`;
       const res=await fetch(PROXY+encodeURIComponent(url));
       const json=await res.json();
@@ -470,7 +471,8 @@ async function fetchAllPrices(){
       const chg=prev>0?((price-prev)/prev*100):0;
       map[sym]={price,chg};
     }catch(e){}
-  }));
+    await new Promise(r=>setTimeout(r,200));
+  }
   return map;
 }
 
@@ -498,8 +500,7 @@ async function fullLoad(){
   const priceMap=await fetchAllPrices();
   for(let i=0;i<allResults.length;i++){
     const u=priceMap[allResults[i].s]||{price:0,chg:0};
-    allResults[i].price=u.price;
-    allResults[i].chg=u.chg;
+    if(u.price>0){allResults[i].price=u.price; allResults[i].chg=u.chg;}
     if(allResults[i].ma200!==null&&u.price>0){
       allResults[i].pctFromMA=((u.price-allResults[i].ma200)/allResults[i].ma200*100);
       allResults[i].ma200Above=u.price>allResults[i].ma200;
@@ -508,6 +509,10 @@ async function fullLoad(){
   }
 
   document.getElementById('loadingMsg').textContent='';
+  const now=new Date();
+  const etStr=now.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const dateStr=now.toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric'});
+  document.getElementById('refreshInfo').textContent='Indicators last updated: '+dateStr+' at '+etStr+' ET · Prices refresh every 60s';
   document.getElementById('apiStatus').textContent='✓ Live · '+STOCKS.length+' stocks';
   document.getElementById('apiStatus').className='api-status ok';
   const sorted=[...allResults].sort((a,b)=>b.score-a.score);
@@ -527,8 +532,7 @@ async function refreshPrices(){
   for(let i=0;i<allResults.length;i++){
     const u=priceMap[allResults[i].s];
     if(!u) continue;
-    allResults[i].price=u.price;
-    allResults[i].chg=u.chg;
+    if(u.price>0){allResults[i].price=u.price; allResults[i].chg=u.chg;}
     if(allResults[i].ma200!==null&&u.price>0){
       allResults[i].pctFromMA=((u.price-allResults[i].ma200)/allResults[i].ma200*100);
       allResults[i].ma200Above=u.price>allResults[i].ma200;
