@@ -34,10 +34,12 @@ body{background:var(--bg);color:var(--text);font-family:Tahoma,Geneva,sans-serif
 .count-pill span{margin-left:5px;color:var(--yellow);}
 /* ── TABLE ── */
 .tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
-table{width:100%;border-collapse:collapse;min-width:700px;}
+table{width:100%;border-collapse:collapse;min-width:860px;}
 th{background:var(--bg3);color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2;}
+th:first-child{min-width:200px;}
 th.r{text-align:right;}
 td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+td:first-child{min-width:200px;}
 tr:last-child td{border-bottom:none;}
 tr.buy-row{background:var(--buy-bg);}
 tr.sell-row{background:var(--sell-bg);}
@@ -45,13 +47,13 @@ tr.neutral-row{background:transparent;}
 tr.caution-row{background:var(--caution-bg);}
 tr:hover td{background:rgba(124,106,247,.07);}
 /* ── SYM CELL ── */
-.sym-cell{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.sym-cell{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;min-width:160px;}
 .sym{font-weight:700;font-size:13px;letter-spacing:.03em;}
-.sym-link{font-weight:700;font-size:13px;letter-spacing:.03em;color:var(--text);text-decoration:none;border-bottom:1px dashed var(--purple);padding-bottom:1px;transition:color .15s;}
+.sym-link{font-weight:700;font-size:14px;letter-spacing:.03em;color:#fff;text-decoration:none;white-space:nowrap;}
 .sym-link:hover{color:var(--purple);}
-.chart-btn{display:inline-block;background:var(--purple);color:#fff;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;transition:background .15s;}
+.chart-btn{display:inline-flex;align-items:center;gap:3px;background:var(--purple);color:#fff;border-radius:5px;padding:3px 9px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;transition:background .15s;}
 .chart-btn:hover{background:#5d4de0;}
-.sym-name{font-size:11px;color:var(--muted);margin-top:1px;}
+.sym-name{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;}
 .sig-badge{font-size:9px;font-weight:700;border-radius:3px;padding:1px 5px;}
 .sig-badge.buy{background:rgba(52,211,153,.25);color:var(--green);}
 .sig-badge.sell{background:rgba(248,113,113,.25);color:var(--red);}
@@ -294,14 +296,35 @@ async function fetchIndicators(stock){
   }
 }
 
-// ── FETCH PRICES — sequential with stagger so we don't drop data ──
-// Keeps old price until new one arrives
+// ── FETCH PRICES — batch via Yahoo Finance quote endpoint ──
+// Gets all prices in a small number of requests instead of one per stock
 async function fetchAllPrices(){
   const map={};
-  for(let i=0;i<STOCKS.length;i++){
-    const sym=STOCKS[i].s;
+  const syms=STOCKS.map(s=>s.s);
+  // Split into batches of 20
+  const batchSize=20;
+  for(let b=0;b<syms.length;b+=batchSize){
+    const batch=syms.slice(b,b+batchSize);
+    const joined=batch.join('%2C');
     try{
-      const url=`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=5d`;
+      const url=`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${joined}&fields=regularMarketPrice,regularMarketChangePercent`;
+      const res=await fetch(PROXY+encodeURIComponent(url));
+      const json=await res.json();
+      const quotes=json?.quoteResponse?.result||[];
+      quotes.forEach(q=>{
+        const price=q.regularMarketPrice||0;
+        const chg=q.regularMarketChangePercent||0;
+        if(price>0) map[q.symbol]={price,chg};
+      });
+    }catch{}
+    // Small pause between batches to avoid rate limit
+    if(b+batchSize<syms.length) await new Promise(r=>setTimeout(r,400));
+  }
+  // Fallback: for any missing, try individual chart fetch
+  const missing=syms.filter(s=>!map[s]);
+  for(const sym of missing){
+    try{
+      const url=`https://query2.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=5d`;
       const res=await fetch(PROXY+encodeURIComponent(url));
       const json=await res.json();
       const meta=json?.chart?.result?.[0]?.meta||{};
@@ -310,7 +333,7 @@ async function fetchAllPrices(){
       const chg=prev>0?((price-prev)/prev*100):0;
       if(price>0) map[sym]={price,chg};
     }catch{}
-    if(i<STOCKS.length-1) await new Promise(r=>setTimeout(r,150));
+    await new Promise(r=>setTimeout(r,200));
   }
   return map;
 }
@@ -339,7 +362,7 @@ function getScoreLabel(score){
   return{label:'Strong Sell',cls:'neg',rowCls:'sell-row'};
 }
 function getPlay(score,ma200Above){
-  if(score>=3) return{txt:'📞 Buy Calls',cls:'calls'};
+  if(score>=3) return{txt: ma200Above===false?'📞 Buy Calls (Below 200MA)':'📞 Buy Calls',cls:'calls'};
   if(score>=1) return{txt:'📞 Lean Calls',cls:'calls'};
   if(score<=-3) return{txt:'🔴 Buy Puts',cls:'puts'};
   if(score<=-1) return{txt:'🔴 Lean Puts',cls:'puts'};
