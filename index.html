@@ -487,7 +487,7 @@ async function fullLoad(){
 
   document.getElementById('loadingMsg').textContent='Loading live prices…';
 
-  // STEP 2: Load all prices (Finnhub) - staggered
+  // STEP 2: Load all prices (Finnhub) - 1 per second to stay within rate limit
   for(let i=0;i<allResults.length;i++){
     const {price,chg}=await fetchPrice(allResults[i].s);
     allResults[i].price=price;
@@ -497,7 +497,12 @@ async function fullLoad(){
       allResults[i].ma200Above=price>allResults[i].ma200;
     }
     allResults[i].score=scoreStock(allResults[i]);
-    if(i<allResults.length-1) await new Promise(r=>setTimeout(r,200));
+    // Re-render every 5 stocks so prices appear progressively
+    if(i%5===4||i===allResults.length-1){
+      const sorted=[...allResults].sort((a,b)=>b.score-a.score);
+      renderTable(sorted); renderCards(sorted); updateCounts(sorted);
+    }
+    if(i<allResults.length-1) await new Promise(r=>setTimeout(r,1100)); // 1.1s = ~55 calls/min safely
   }
 
   document.getElementById('loadingMsg').textContent='';
@@ -524,7 +529,7 @@ async function refreshPrices(){
       allResults[i].pctFromMA=((u.price-allResults[i].ma200)/allResults[i].ma200*100);
     allResults[i].score=scoreStock(allResults[i]);
     allResults[i].ma200Above=allResults[i].ma200!==null&&u.price>allResults[i].ma200;
-    if(i<allResults.length-1) await new Promise(r=>setTimeout(r,150));
+    if(i<allResults.length-1) await new Promise(r=>setTimeout(r,1100));
   }
   const sorted=[...allResults].sort((a,b)=>b.score-a.score);
   renderTable(sorted); renderCards(sorted); renderAlerts(sorted); updateCounts(sorted);
@@ -554,8 +559,9 @@ function renderTable(data){
       :'<span style="color:var(--muted)">—</span>';
     const sb=r.score>=4?'<span class="sig-badge buy">BUY</span>':r.score<=-4?'<span class="sig-badge sell">SELL</span>':'';
     const ci=r.caution?'<span title="Higher volatility"> ⚠️</span>':'';
+    const tvUrl=`https://www.tradingview.com/chart/?symbol=${r.s}&interval=D&studies=RSI@tv-basicstudies,BB@tv-basicstudies,MASimple@tv-basicstudies`;
     html+=`<tr class="${rowCls}${r.caution?' caution-row':''}">
-      <td><div class="sym">${r.s}${ci}${sb}</div><div class="sym-name">${r.name}</div></td>
+      <td><div class="sym"><a href="${tvUrl}" target="_blank" style="color:inherit;text-decoration:none;" title="Open TradingView chart">${r.s}</a>${ci}${sb}</div><div class="sym-name">${r.name} <a href="${tvUrl}" target="_blank" style="color:var(--muted2);font-size:10px;text-decoration:none;">📈 Chart</a></div></td>
       <td class="price-cell">${pf}${liveDot}</td>
       <td class="chg-cell ${cc}">${cf}</td>
       <td>${rsiH}</td><td>${bbH}</td><td>${maH}</td>
@@ -579,9 +585,10 @@ function renderCards(data){
     const pf=r.price>0?'$'+r.price.toFixed(2):'—';
     const cf=r.price>0?(r.chg>=0?'+':'')+r.chg.toFixed(2)+'%':'—';
     const cc=r.chg<0?'neg':r.chg>0?'pos':'flat';
+    const tvUrl=`https://www.tradingview.com/chart/?symbol=${r.s}&interval=D&studies=RSI@tv-basicstudies,BB@tv-basicstudies,MASimple@tv-basicstudies`;
     html+=`<div class="card ${rowCls}">
       <div class="card-top">
-        <div><div class="card-sym">${r.s}${r.caution?' ⚠️':''}</div><div class="card-name">${r.name}</div></div>
+        <div><div class="card-sym"><a href="${tvUrl}" target="_blank" style="color:inherit;text-decoration:none;">${r.s}</a>${r.caution?' ⚠️':''}</div><div class="card-name">${r.name} <a href="${tvUrl}" target="_blank" style="color:var(--muted2);font-size:10px;">📈 Chart</a></div></div>
         <div><div class="card-price">${pf}</div><div class="card-chg ${cc}">${cf}</div></div>
       </div>
       <div class="card-stats">
