@@ -169,6 +169,18 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
 .fg{animation:fg .7s ease-out;} .fr{animation:fr .7s ease-out;}
 @media(max-width:700px){ td,th{padding:5px 6px;} .prog-track{width:50px;} .bp-grid{grid-template-columns:1fr 1fr;} }
 
+/* HIT RATE */
+.hit-wrap{display:flex;flex-direction:column;gap:3px;min-width:140px;}
+.hit-row{display:flex;align-items:center;gap:6px;font-size:13px;}
+.hit-label{color:#5a5a7a;font-size:12px;width:38px;flex-shrink:0;}
+.hit-bar-bg{flex:1;height:5px;background:#1e1e35;border-radius:3px;}
+.hit-bar-fill{height:5px;border-radius:3px;transition:width .6s;}
+.hit-pct{font-size:13px;font-weight:700;min-width:32px;text-align:right;}
+.hit-pct.high{color:#34d399;} .hit-pct.mid{color:#fbbf24;} .hit-pct.low{color:#f87171;}
+.hit-avg{font-size:11px;color:#7a7a9a;}
+.hit-loading{font-size:12px;color:#5a5a7a;font-style:italic;}
+.hit-signals{font-size:11px;color:#5a5a7a;margin-top:1px;}
+
 /* CHECKLIST SCAN */
 .checklist-scan{background:#0d0d1a;border:1px solid rgba(167,139,250,.4);border-radius:12px;padding:16px 18px;margin-bottom:14px;display:none;}
 .cs-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
@@ -348,6 +360,7 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
       <th>Chg %</th>
       <th>Trigger %</th>
       <th>Progress to Trigger</th>
+      <th>Historical Hit Rate</th>
       <th>Strike Rec.</th>
       <th>Status</th>
     </tr>
@@ -434,6 +447,7 @@ function renderSkeleton(){
         <div class="prog-track"><div class="prog-fill" id="bar-${t.s}" style="width:0%;background:#5a5a7a"></div></div>
         <span class="prog-pct none" id="prog-${t.s}">0%</span>
       </div></td>
+      <td><div class="hit-wrap" id="hit-${t.s}"><span class="hit-loading">Loading history…</span></div></td>
       <td><span class="strike-rec na" id="strike-${t.s}">—</span></td>
       <td><span class="status-pill status-waiting" id="status-${t.s}">Waiting</span></td>
     </tr>`).join('');
@@ -767,6 +781,97 @@ function updateCounts(){
 }
 
 // ══════════════════════════════════════════════
+//  HISTORICAL HIT RATE
+// ══════════════════════════════════════════════
+async function loadAllHitRates(){
+  const PROXIES=[
+    s=>`https://corsproxy.io/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${s}?interval=1d&range=1y`)}`,
+    s=>`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${s}?interval=1d&range=1y`)}`,
+  ];
+  const BATCH=5, DELAY=400;
+  for(let i=0;i<TICKERS.length;i+=BATCH){
+    const batch=TICKERS.slice(i,i+BATCH);
+    await Promise.allSettled(batch.map(t=>calcHitRate(t,PROXIES)));
+    if(i+BATCH<TICKERS.length) await new Promise(r=>setTimeout(r,DELAY));
+  }
+}
+
+async function calcHitRate(ticker, PROXIES){
+  const el = document.getElementById(`hit-${ticker.s}`);
+  if(!el) return;
+  const sym = ticker.s==='BRK-B'?'BRK-B':ticker.s;
+
+  for(const proxy of PROXIES){
+    try{
+      const r=await fetch(proxy(sym),{signal:AbortSignal.timeout(8000)});
+      if(!r.ok) continue;
+      const d=await r.json();
+      const res=d?.chart?.result?.[0];
+      if(!res) continue;
+      const quotes=res.indicators?.quote?.[0];
+      const closes=quotes?.close, opens=quotes?.open, highs=quotes?.high;
+      if(!closes||closes.length<20) continue;
+
+      let signals=0, openHits=0, highHits=0;
+      let openGainTotal=0, highGainTotal=0;
+
+      for(let i=1;i<closes.length-1;i++){
+        const prev=closes[i-1];
+        const curr=closes[i];
+        if(!prev||!curr) continue;
+        const chg=(curr-prev)/prev*100;
+
+        // Did this day hit the trigger?
+        if(chg<=ticker.trigger){
+          signals++;
+          const nextOpen=opens?.[i+1];
+          const nextHigh=highs?.[i+1];
+          const nextClose=closes[i+1];
+          if(nextOpen&&nextOpen>curr){
+            openHits++;
+            openGainTotal+=((nextOpen-curr)/curr*100);
+          }
+          if(nextHigh&&nextHigh>curr){
+            highHits++;
+            highGainTotal+=((nextHigh-curr)/curr*100);
+          }
+        }
+      }
+
+      if(signals===0){
+        el.innerHTML=`<span class="hit-signals">No signals in past year</span>`;
+        return;
+      }
+
+      const openRate=Math.round(openHits/signals*100);
+      const highRate=Math.round(highHits/signals*100);
+      const openAvg=(openGainTotal/signals).toFixed(1);
+      const highAvg=(highGainTotal/signals).toFixed(1);
+
+      const pctClass=p=>p>=70?'high':p>=50?'mid':'low';
+      const barColor=p=>p>=70?'#34d399':p>=50?'#fbbf24':'#f87171';
+
+      el.innerHTML=`
+        <div class="hit-row">
+          <span class="hit-label">Open</span>
+          <div class="hit-bar-bg"><div class="hit-bar-fill" style="width:${openRate}%;background:${barColor(openRate)}"></div></div>
+          <span class="hit-pct ${pctClass(openRate)}">${openRate}%</span>
+          <span class="hit-avg">avg +${openAvg}%</span>
+        </div>
+        <div class="hit-row">
+          <span class="hit-label">High</span>
+          <div class="hit-bar-bg"><div class="hit-bar-fill" style="width:${highRate}%;background:${barColor(highRate)}"></div></div>
+          <span class="hit-pct ${pctClass(highRate)}">${highRate}%</span>
+          <span class="hit-avg">avg +${highAvg}%</span>
+        </div>
+        <div class="hit-signals">${signals} signal${signals!==1?'s':''} in past year</div>`;
+      return;
+    }catch(e){}
+  }
+  if(el) el.innerHTML=`<span class="hit-loading">Data unavailable</span>`;
+}
+
+// ══════════════════════════════════════════════
 //  SAVE PERMANENTLY MODAL
 // ══════════════════════════════════════════════
 function showSavePermanently(){
@@ -873,6 +978,8 @@ window.addEventListener('load',()=>{
   fetchClosingPrices(saved);
   // 4. Connect WebSocket for live ticks during market hours
   connectWS(saved);
+  // 5. Load historical hit rates from Yahoo Finance
+  loadAllHitRates();
   if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
 });
 </script>
