@@ -1,218 +1,263 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stock Flip Scanner</title>
+<title>KB Stock Flip Scanner</title>
 <style>
+/* ═══════════════════════════════════════
+   THEME VARIABLES
+═══════════════════════════════════════ */
+:root {
+  --bg:#0a0a0f; --bg2:#0d0d1a; --bg3:#12122a; --bg4:#1a1a2e;
+  --border:#2a2a3e; --border2:#1e1e35;
+  --text:#e2e2f0; --muted:#7a7a9a; --muted2:#5a5a7a;
+  --purple:#a78bfa; --purple-dim:rgba(167,139,250,.12);
+  --green:#34d399; --red:#f87171; --yellow:#fbbf24; --blue:#60a5fa;
+  --card-bg:var(--bg2); --input-bg:var(--bg3);
+}
+[data-theme="light"] {
+  --bg:#f0f0f8; --bg2:#ffffff; --bg3:#f5f5fc; --bg4:#eaeaf5;
+  --border:#d0d0e8; --border2:#e0e0f0;
+  --text:#1a1a2e; --muted:#6060a0; --muted2:#8080b0;
+  --card-bg:#ffffff; --input-bg:#f5f5fc;
+}
+
 * { margin:0; padding:0; box-sizing:border-box; }
-body {
-  background:#0a0a0f; color:#e2e2f0;
-  font-family: Tahoma, Geneva, sans-serif;
-  font-size:15px; padding:16px;
-}
-.header {
-  display:flex; align-items:center; justify-content:space-between;
-  margin-bottom:14px; padding-bottom:12px;
-  border-bottom:2px solid #2a2a3e; flex-wrap:wrap; gap:10px;
-}
+body { background:var(--bg); color:var(--text); font-family:Tahoma,Geneva,sans-serif; font-size:15px; padding:16px; transition:background .3s,color .3s; }
+
+/* ═══ HEADER ═══ */
+.header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding-bottom:12px; border-bottom:2px solid var(--border); flex-wrap:wrap; gap:10px; }
 .brand-wrap { display:flex; align-items:center; gap:10px; }
-.brand-icon {
-  width:38px; height:38px; background:linear-gradient(135deg,#1a1a3a,#4a3a8a);
-  border-radius:10px; display:flex; align-items:center; justify-content:center;
-  font-weight:700; font-size:15px; color:#a78bfa;
-  box-shadow:0 0 18px rgba(167,139,250,.3); flex-shrink:0;
-}
-.brand-name { font-size:20px; font-weight:700; letter-spacing:.03em; color:#a78bfa; }
-.brand-sub  { font-size:15px; color:#5a5a7a; margin-top:3px; font-weight:700; }
-.hright { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-.scan-time { font-size:15px; color:#fbbf24; font-weight:700; background:rgba(251,191,36,.1);
-  border:1px solid rgba(251,191,36,.25); border-radius:5px; padding:3px 9px; }
-#clock { font-size:15px; font-weight:700; }
-.market-badge { font-size:15px; font-weight:700; padding:4px 10px; border-radius:5px; text-transform:uppercase; letter-spacing:.05em; }
-.market-badge.open   { background:rgba(52,211,153,.15); color:#34d399; border:1px solid rgba(52,211,153,.3); }
-.market-badge.closed { background:rgba(248,113,113,.1);  color:#f87171; border:1px solid rgba(248,113,113,.25); }
-.market-badge.pre    { background:rgba(251,191,36,.1);   color:#fbbf24; border:1px solid rgba(251,191,36,.3); }
-.power-badge {
-  display:flex; align-items:center; gap:6px;
-  background:rgba(167,139,250,.12); border:1px solid rgba(167,139,250,.35);
-  border-radius:8px; padding:5px 12px; cursor:pointer;
-}
-.power-badge .pb-num   { font-size:18px; font-weight:700; color:#a78bfa; }
-.power-badge .pb-label { font-size:16px; color:#7a7a9a; line-height:1.3; }
+.brand-icon { width:38px; height:38px; background:linear-gradient(135deg,#1a1a3a,#4a3a8a); border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; color:var(--purple); box-shadow:0 0 18px rgba(167,139,250,.3); flex-shrink:0; }
+.brand-name { font-size:20px; font-weight:700; color:var(--purple); }
+.brand-sub  { font-size:13px; color:var(--muted2); margin-top:2px; font-weight:700; }
+.hright { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+
+/* ═══ COUNTDOWN ═══ */
+.countdown-wrap { display:flex; flex-direction:column; align-items:center; background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:4px 12px; }
+.countdown-label { font-size:11px; color:var(--muted2); font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+.countdown-time { font-size:16px; font-weight:700; color:var(--yellow); font-variant-numeric:tabular-nums; }
+.countdown-time.imminent { color:var(--red); animation:pulse-red 1s infinite; }
+.countdown-time.open-now { color:var(--green); }
+@keyframes pulse-red { 0%,100%{opacity:1;} 50%{opacity:.5;} }
+
+/* ═══ THEME TOGGLE ═══ */
+.theme-toggle { background:var(--bg2); border:1px solid var(--border); border-radius:20px; padding:4px 12px; font-size:14px; cursor:pointer; color:var(--muted); transition:all .2s; }
+.theme-toggle:hover { border-color:var(--purple); color:var(--purple); }
+
+/* ═══ MARKET BADGE ═══ */
+.market-badge { font-size:13px; font-weight:700; padding:4px 10px; border-radius:5px; text-transform:uppercase; letter-spacing:.05em; }
+.market-badge.open   { background:rgba(52,211,153,.15); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+.market-badge.closed { background:rgba(248,113,113,.1);  color:var(--red);   border:1px solid rgba(248,113,113,.25); }
+.market-badge.pre    { background:rgba(251,191,36,.1);   color:var(--yellow);border:1px solid rgba(251,191,36,.3); }
+
+/* ═══ POWER BADGE ═══ */
+.power-badge { display:flex; align-items:center; gap:6px; background:var(--purple-dim); border:1px solid rgba(167,139,250,.35); border-radius:8px; padding:5px 12px; cursor:pointer; }
+.power-badge .pb-num   { font-size:18px; font-weight:700; color:var(--purple); }
+.power-badge .pb-label { font-size:13px; color:var(--muted); line-height:1.3; }
+
+/* ═══ WS STATUS ═══ */
 .ws-wrap { display:flex; align-items:center; gap:6px; }
-.dot { width:10px; height:10px; border-radius:50%; background:#34d399; box-shadow:0 0 8px #34d399; animation:pulse 2s infinite; flex-shrink:0; }
-.dot.off { background:#f87171; box-shadow:0 0 8px #f87171; animation:none; }
+.dot { width:10px; height:10px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); animation:pulse 2s infinite; flex-shrink:0; }
+.dot.off { background:var(--red); box-shadow:0 0 8px var(--red); animation:none; }
 @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
-.ws-status { font-size:15px; font-weight:700; color:#7a7a9a; }
-.ws-status.live { color:#34d399; }
+.ws-status { font-size:13px; font-weight:700; color:var(--muted); }
+.ws-status.live { color:var(--green); }
+
+/* ═══ DAILY SUMMARY ═══ */
+.summary-bar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.sum-card { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:8px 14px; display:flex; flex-direction:column; align-items:center; min-width:90px; }
+.sum-num  { font-size:20px; font-weight:700; }
+.sum-label{ font-size:12px; color:var(--muted2); margin-top:1px; }
+.sum-card.triggered .sum-num { color:var(--purple); }
+.sum-card.warm      .sum-num { color:var(--yellow); }
+.sum-card.watch     .sum-num { color:var(--blue); }
+.sum-card.best .sum-num { color:var(--green); font-size:14px; }
+
+/* ═══ API ROW ═══ */
 .api-row { display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
-.api-row label { font-size:15px; color:#7a7a9a; font-weight:700; }
-.api-row input {
-  background:#12122a; border:1px solid #2a2a3e; color:#e2e2f0;
-  border-radius:6px; padding:5px 10px; font-size:15px;
-  font-family:Tahoma,Geneva,sans-serif; width:260px;
-}
-.api-row input:focus { outline:1px solid #a78bfa; border-color:#a78bfa; }
-.btn-start { background:#a78bfa; color:#0a0a0f; border:none; border-radius:6px;
-  padding:6px 16px; font-size:15px; font-weight:700; cursor:pointer; font-family:Tahoma,Geneva,sans-serif; }
-.btn-start:hover { background:#bba8fb; }
-.blueprint-panel { background:#0d0d1a; border:1px solid #2a2a3e; border-radius:10px; padding:12px 16px; margin-bottom:14px; }
-.bp-title { font-size:15px; font-weight:700; color:#7a7a9a; text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
-.bp-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; }
-.bp-item { background:#12122a; border:1px solid #1e1e35; border-radius:7px; padding:8px 12px; }
-.bp-label { font-size:16px; color:#5a5a7a; text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px; }
-.bp-val { font-size:15px; font-weight:700; color:#e2e2f0; }
-.bp-val.purple{color:#a78bfa;} .bp-val.green{color:#34d399;} .bp-val.red{color:#f87171;} .bp-val.amber{color:#fbbf24;}
-.rules-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
-.rule-chip { display:flex; align-items:center; gap:6px; font-size:15px; color:#7a7a9a;
-  background:#0d0d1a; border:1px solid #1e1e35; border-radius:6px; padding:4px 10px; }
+.api-row label { font-size:15px; color:var(--muted); font-weight:700; }
+.api-row input { background:var(--input-bg); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:5px 10px; font-size:14px; font-family:Tahoma,Geneva,sans-serif; width:260px; }
+.api-row input:focus { outline:1px solid var(--purple); border-color:var(--purple); }
+.btn-start { background:var(--purple); color:#0a0a0f; border:none; border-radius:6px; padding:6px 16px; font-size:14px; font-weight:700; cursor:pointer; font-family:Tahoma,Geneva,sans-serif; }
+.btn-start:hover { opacity:.85; }
+
+/* ═══ BLUEPRINT / RULES / CHECKLIST / EXIT ═══ */
+.blueprint-panel,.rules-bar,.checklist,.exit-guide { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin-bottom:12px; }
+.bp-title,.exit-title { font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+.bp-grid,.exit-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:8px; }
+.bp-item,.exit-card { background:var(--bg3); border:1px solid var(--border2); border-radius:7px; padding:8px 12px; }
+.bp-label { font-size:12px; color:var(--muted2); text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px; }
+.bp-val { font-size:14px; font-weight:700; color:var(--text); }
+.bp-val.purple{color:var(--purple);} .bp-val.green{color:var(--green);} .bp-val.red{color:var(--red);} .bp-val.amber{color:var(--yellow);}
+.rules-bar { display:flex; gap:8px; flex-wrap:wrap; padding:10px 14px; }
+.rule-chip { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); background:var(--bg3); border:1px solid var(--border2); border-radius:6px; padding:4px 10px; }
 .rule-chip .dot-sm { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-.alert-box { background:rgba(167,139,250,.08); border:1px solid rgba(167,139,250,.4);
-  border-radius:10px; padding:12px 16px; margin-bottom:14px; display:none; }
-.alert-title { font-size:16px; font-weight:700; color:#a78bfa; margin-bottom:8px; }
-.alert-list { list-style:none; display:flex; flex-direction:column; gap:4px; }
-.alert-list li { font-size:15px; color:#e2e2f0; }
-.checklist { background:#0d0d1a; border:1px solid #2a2a3e; border-radius:10px; padding:12px 16px; margin-bottom:14px; }
-.checklist-title { font-size:15px; font-weight:700; color:#fbbf24; margin-bottom:8px; }
+.checklist-title { font-size:14px; font-weight:700; color:var(--yellow); margin-bottom:8px; }
 .check-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:6px; }
-.check-item { display:flex; align-items:center; gap:7px; font-size:15px; color:#7a7a9a; }
-.exit-guide { background:#0d0d1a; border:1px solid #2a2a3e; border-radius:10px; padding:12px 16px; margin-bottom:14px; }
-.exit-title { font-size:15px; font-weight:700; color:#7a7a9a; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
-.exit-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; }
-.exit-card { background:#12122a; border:1px solid #1e1e35; border-radius:7px; padding:8px 12px; }
-.exit-scenario { font-size:15px; font-weight:700; margin-bottom:3px; }
-.exit-action { font-size:15px; color:#7a7a9a; }
-/* SEARCH BAR */
-.search-bar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
-.search-wrap{position:relative;flex:1;min-width:220px;max-width:380px;}
-.search-input{width:100%;background:#0d0d1a;border:1px solid #2a2a3e;color:#e2e2f0;
-  border-radius:8px;padding:7px 14px 7px 36px;font-size:15px;font-family:Tahoma,Geneva,sans-serif;transition:border-color .2s;}
-.search-input:focus{outline:none;border-color:#a78bfa;}
-.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#7a7a9a;font-size:15px;pointer-events:none;}
-.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#7a7a9a;font-size:16px;cursor:pointer;display:none;padding:0;}
-.search-clear:hover{color:#e2e2f0;}
-.add-panel{background:#0d0d1a;border:1px solid rgba(167,139,250,.5);border-radius:10px;
-  padding:14px 18px;margin-bottom:12px;display:none;align-items:center;gap:10px;flex-wrap:wrap;}
-.add-panel-msg{font-size:15px;color:#7a7a9a;}
-.add-panel-sym{font-size:16px;font-weight:700;color:#a78bfa;}
-.btn-add{background:#a78bfa;color:#0a0a0f;border:none;border-radius:6px;padding:6px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:Tahoma,Geneva,sans-serif;}
-.btn-add:hover{background:#bba8fb;}
-.btn-save-perm{background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.4);color:#60a5fa;border-radius:6px;padding:6px 16px;font-size:15px;font-weight:700;cursor:pointer;font-family:Tahoma,Geneva,sans-serif;}
-.btn-save-perm:hover{background:rgba(96,165,250,.25);}
-.btn-cancel-s{background:#1a1a2e;border:1px solid #2a2a3e;color:#7a7a9a;border-radius:6px;padding:6px 14px;font-size:15px;cursor:pointer;font-family:Tahoma,Geneva,sans-serif;}
-.btn-cancel-s:hover{color:#e2e2f0;}
-.custom-tag{font-size:12px;color:#60a5fa;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25);border-radius:3px;padding:1px 5px;margin-left:4px;}
-/* SAVE PERMANENTLY MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px;}
-.modal-overlay.open{display:flex;}
-.modal-box{background:#0d0d1a;border:1px solid #a78bfa;border-radius:14px;padding:24px;max-width:640px;width:100%;box-shadow:0 0 40px rgba(167,139,250,.2);}
-.modal-title{font-size:17px;font-weight:700;color:#a78bfa;margin-bottom:6px;}
-.modal-sub{font-size:14px;color:#5a5a7a;margin-bottom:14px;line-height:1.5;}
-.modal-steps{font-size:14px;color:#7a7a9a;margin-bottom:14px;line-height:1.8;}
-.modal-steps strong{color:#e2e2f0;}
-.modal-code{background:#06060f;border:1px solid #2a2a3e;border-radius:8px;padding:12px;font-family:monospace;font-size:13px;color:#a78bfa;white-space:pre-wrap;word-break:break-all;max-height:180px;overflow-y:auto;margin-bottom:12px;}
-.modal-btns{display:flex;gap:8px;flex-wrap:wrap;}
-.btn-copy{background:#a78bfa;color:#0a0a0f;border:none;border-radius:6px;padding:8px 20px;font-size:15px;font-weight:700;cursor:pointer;font-family:Tahoma,Geneva,sans-serif;}
-.btn-copy:hover{background:#bba8fb;}
-.btn-copy.copied{background:#60a5fa;color:#fff;}
-.btn-close-modal{background:#1a1a2e;border:1px solid #2a2a3e;color:#7a7a9a;border-radius:6px;padding:8px 16px;font-size:15px;cursor:pointer;font-family:Tahoma,Geneva,sans-serif;}
-.btn-close-modal:hover{color:#e2e2f0;}
+.check-item { display:flex; align-items:center; gap:7px; font-size:14px; color:var(--muted); }
+.exit-scenario { font-size:13px; font-weight:700; margin-bottom:3px; }
+.exit-action { font-size:13px; color:var(--muted); }
+
+/* ═══ CHECKLIST SCAN ═══ */
+.checklist-scan { background:var(--bg2); border:1px solid rgba(167,139,250,.4); border-radius:12px; padding:16px 18px; margin-bottom:14px; display:none; }
+.cs-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+.cs-title { font-size:15px; font-weight:700; color:var(--purple); }
+.cs-scanning { font-size:13px; color:var(--muted); font-style:italic; }
+.cs-stock-block { background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:10px; }
+.cs-stock-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+.cs-sym { font-size:16px; font-weight:700; color:var(--text); }
+.cs-price { font-size:14px; color:var(--muted); }
+.cs-verdict { font-size:13px; font-weight:700; padding:3px 10px; border-radius:5px; }
+.cs-verdict.go      { background:rgba(52,211,153,.15); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+.cs-verdict.caution { background:rgba(251,191,36,.12); color:var(--yellow); border:1px solid rgba(251,191,36,.3); }
+.cs-verdict.stop    { background:rgba(248,113,113,.12); color:var(--red); border:1px solid rgba(248,113,113,.25); }
+.cs-checks { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:7px; margin-bottom:10px; }
+.cs-check { display:flex; align-items:flex-start; gap:8px; font-size:13px; padding:6px 10px; border-radius:7px; background:var(--bg2); border:1px solid var(--border2); }
+.cs-check .ci { font-size:15px; flex-shrink:0; margin-top:1px; }
+.cs-check .ct { color:var(--text); line-height:1.4; }
+.cs-check .ct .sub { display:block; font-size:12px; color:var(--muted); margin-top:2px; }
+.cs-check.pass { border-color:rgba(52,211,153,.25); background:rgba(52,211,153,.04); }
+.cs-check.fail { border-color:rgba(248,113,113,.3); background:rgba(248,113,113,.05); }
+.cs-check.warn { border-color:rgba(251,191,36,.3); background:rgba(251,191,36,.04); }
+.cs-check.loading { opacity:.5; }
+.cs-news-title { font-size:12px; font-weight:700; color:var(--muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:.05em; }
+.cs-news-item { font-size:13px; color:var(--muted); padding:4px 0; border-bottom:1px solid var(--border2); line-height:1.4; }
+.cs-news-item:last-child { border-bottom:none; }
+.cs-news-item a { color:var(--purple); text-decoration:none; }
+.cs-news-item a:hover { text-decoration:underline; }
+
+/* ═══ SEARCH ═══ */
+.search-bar { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+.search-wrap { position:relative; flex:1; min-width:220px; max-width:380px; }
+.search-input { width:100%; background:var(--bg2); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:7px 14px 7px 36px; font-size:15px; font-family:Tahoma,Geneva,sans-serif; transition:border-color .2s; }
+.search-input:focus { outline:none; border-color:var(--purple); }
+.search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:15px; pointer-events:none; }
+.search-clear { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--muted); font-size:16px; cursor:pointer; display:none; padding:0; }
+.add-panel { background:var(--bg2); border:1px solid rgba(167,139,250,.5); border-radius:10px; padding:14px 18px; margin-bottom:12px; display:none; align-items:center; gap:10px; flex-wrap:wrap; }
+.add-panel-msg { font-size:15px; color:var(--muted); }
+.add-panel-sym { font-size:16px; font-weight:700; color:var(--purple); }
+.btn-add { background:var(--purple); color:#0a0a0f; border:none; border-radius:6px; padding:6px 18px; font-size:14px; font-weight:700; cursor:pointer; font-family:Tahoma,Geneva,sans-serif; }
+.btn-save-perm { background:rgba(96,165,250,.15); border:1px solid rgba(96,165,250,.4); color:var(--blue); border-radius:6px; padding:6px 16px; font-size:14px; font-weight:700; cursor:pointer; font-family:Tahoma,Geneva,sans-serif; }
+.btn-cancel-s { background:var(--bg3); border:1px solid var(--border); color:var(--muted); border-radius:6px; padding:6px 14px; font-size:14px; cursor:pointer; font-family:Tahoma,Geneva,sans-serif; }
+.custom-tag { font-size:11px; color:var(--blue); background:rgba(96,165,250,.1); border:1px solid rgba(96,165,250,.25); border-radius:3px; padding:1px 5px; margin-left:4px; }
+
+/* ═══ MODALS ═══ */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:1000; display:none; align-items:center; justify-content:center; padding:16px; }
+.modal-overlay.open { display:flex; }
+.modal-box { background:var(--bg2); border:1px solid var(--purple); border-radius:14px; padding:24px; max-width:640px; width:100%; box-shadow:0 0 40px rgba(167,139,250,.2); }
+.modal-title { font-size:17px; font-weight:700; color:var(--purple); margin-bottom:6px; }
+.modal-sub { font-size:14px; color:var(--muted2); margin-bottom:14px; line-height:1.5; }
+.modal-steps { font-size:14px; color:var(--muted); margin-bottom:14px; line-height:1.8; }
+.modal-steps strong { color:var(--text); }
+.modal-code { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; font-family:monospace; font-size:13px; color:var(--purple); white-space:pre-wrap; word-break:break-all; max-height:180px; overflow-y:auto; margin-bottom:12px; }
+.modal-btns { display:flex; gap:8px; flex-wrap:wrap; }
+.btn-copy { background:var(--purple); color:#0a0a0f; border:none; border-radius:6px; padding:8px 20px; font-size:14px; font-weight:700; cursor:pointer; font-family:Tahoma,Geneva,sans-serif; }
+.btn-copy.copied { background:var(--blue); color:#fff; }
+.btn-close-modal { background:var(--bg3); border:1px solid var(--border); color:var(--muted); border-radius:6px; padding:8px 16px; font-size:14px; cursor:pointer; font-family:Tahoma,Geneva,sans-serif; }
+
+/* ═══ FILTER BAR ═══ */
 .filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; align-items:center; }
-.filter-btn { background:#12122a; border:1px solid #2a2a3e; color:#7a7a9a;
-  border-radius:6px; padding:5px 13px; font-size:15px; cursor:pointer;
-  font-family:Tahoma,Geneva,sans-serif; transition:all .2s; }
-.filter-btn:hover,.filter-btn.active { background:#1e1e35; border-color:#a78bfa; color:#a78bfa; }
-.filter-cnt { font-size:16px; background:#1e1e35; border-radius:3px; padding:1px 5px; margin-left:3px; }
+.filter-btn { background:var(--bg2); border:1px solid var(--border); color:var(--muted); border-radius:6px; padding:5px 13px; font-size:14px; cursor:pointer; font-family:Tahoma,Geneva,sans-serif; transition:all .2s; }
+.filter-btn:hover,.filter-btn.active { background:var(--bg3); border-color:var(--purple); color:var(--purple); }
+.filter-cnt { font-size:13px; background:var(--bg3); border-radius:3px; padding:1px 5px; margin-left:3px; }
+
+/* ═══ TABLE ═══ */
 .tbl-wrap { overflow-x:auto; }
 table { width:100%; border-collapse:collapse; }
-thead th { background:#0d0d1a; color:#5a5a7a; font-size:15px; font-weight:700;
-  text-transform:uppercase; letter-spacing:.06em; padding:8px 10px;
-  text-align:left; border-bottom:1px solid #2a2a3e; white-space:nowrap; }
-tbody tr { border-bottom:1px solid #1a1a2e; transition:background .15s; }
-tbody tr:hover { background:#0d0d1a; }
+thead th { background:var(--bg2); color:var(--muted2); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:8px 10px; text-align:left; border-bottom:1px solid var(--border); white-space:nowrap; }
+tbody tr { border-bottom:1px solid var(--border2); transition:background .15s; }
+tbody tr:hover { background:var(--bg2); }
 tbody tr.triggered { background:rgba(167,139,250,.06); }
 tbody tr.triggered:hover { background:rgba(167,139,250,.1); }
 td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
-.sym-wrap { display:flex; align-items:center; gap:7px; }
-.sym { font-size:15px; font-weight:700; color:#e2e2f0; text-decoration:none; }
-.sym:hover { color:#a78bfa; }
-.trig-badge { font-size:12px; font-weight:700; letter-spacing:.05em; padding:2px 6px;
-  border-radius:4px; background:rgba(167,139,250,.2); color:#a78bfa;
-  border:1px solid rgba(167,139,250,.4); display:none; }
-.chart-btn { font-size:15px; color:#7a7a9a; background:#1a1a2e; border:1px solid #2a2a3e;
-  border-radius:4px; padding:2px 6px; text-decoration:none; transition:all .15s; }
-.chart-btn:hover { color:#a78bfa; border-color:#a78bfa; }
+
+/* ═══ STAR ═══ */
+.star-btn { background:none; border:none; font-size:16px; cursor:pointer; padding:0 3px; opacity:.3; transition:opacity .2s,transform .2s; }
+.star-btn.starred { opacity:1; transform:scale(1.2); }
+.star-btn:hover { opacity:.8; }
+
+/* ═══ TICKER CELL ═══ */
+.sym-wrap { display:flex; align-items:center; gap:6px; }
+.sym { font-size:15px; font-weight:700; color:var(--text); text-decoration:none; }
+.sym:hover { color:var(--purple); }
+.trig-badge { font-size:11px; font-weight:700; letter-spacing:.05em; padding:2px 6px; border-radius:4px; background:rgba(167,139,250,.2); color:var(--purple); border:1px solid rgba(167,139,250,.4); display:none; }
+.chart-btn { font-size:13px; color:var(--muted); background:var(--bg3); border:1px solid var(--border); border-radius:4px; padding:2px 6px; text-decoration:none; transition:all .15s; }
+.chart-btn:hover { color:var(--purple); border-color:var(--purple); }
+
+/* ═══ PRICE / CHG ═══ */
 .price { font-size:15px; font-weight:700; }
-.chg.pos{color:#34d399;} .chg.neg{color:#f87171;} .chg.neu{color:#7a7a9a;}
-.trig-pct { font-size:16px; font-weight:700; color:#a78bfa; }
+.chg.pos{color:var(--green);} .chg.neg{color:var(--red);} .chg.neu{color:var(--muted);}
+.trig-pct { font-size:14px; font-weight:700; color:var(--purple); }
+
+/* ═══ PROGRESS ═══ */
 .prog-wrap { display:flex; align-items:center; gap:8px; }
-.prog-track { width:80px; height:6px; background:#1e1e35; border-radius:3px; flex-shrink:0; }
+.prog-track { width:70px; height:6px; background:var(--border); border-radius:3px; flex-shrink:0; }
 .prog-fill { height:6px; border-radius:3px; transition:width .4s; }
-.prog-pct { font-size:15px; font-weight:700; min-width:36px; }
-.prog-pct.danger{color:#f87171;} .prog-pct.warn{color:#fbbf24;} .prog-pct.mild{color:#60a5fa;} .prog-pct.none{color:#5a5a7a;}
-.status-pill { font-size:16px; font-weight:700; letter-spacing:.05em; padding:3px 9px;
-  border-radius:10px; text-transform:uppercase; display:inline-block; }
-.status-triggered { background:rgba(167,139,250,.15); color:#a78bfa; border:1px solid rgba(167,139,250,.35); }
-.status-warm      { background:rgba(251,191,36,.1);   color:#fbbf24; border:1px solid rgba(251,191,36,.3); }
-.status-watch     { background:rgba(96,165,250,.1);   color:#60a5fa; border:1px solid rgba(96,165,250,.25); }
-.status-waiting   { background:rgba(122,122,154,.1);  color:#7a7a9a; border:1px solid rgba(122,122,154,.2); }
-.strike-rec { font-size:15px; color:#a78bfa; font-weight:700; }
-.strike-rec.na { color:#5a5a7a; font-weight:400; }
-.loading-row td { text-align:center; padding:40px; color:#5a5a7a; font-size:16px; }
-.spinner { display:inline-block; width:18px; height:18px; margin-right:8px;
-  border:2px solid #2a2a3e; border-top-color:#a78bfa;
-  border-radius:50%; animation:spin .8s linear infinite; vertical-align:middle; }
-@keyframes spin{to{transform:rotate(360deg);}}
-@keyframes fg{0%{background:rgba(52,211,153,.2);}100%{background:transparent;}}
-@keyframes fr{0%{background:rgba(248,113,113,.2);}100%{background:transparent;}}
+.prog-pct { font-size:13px; font-weight:700; min-width:34px; }
+.prog-pct.danger{color:var(--red);} .prog-pct.warn{color:var(--yellow);} .prog-pct.mild{color:var(--blue);} .prog-pct.none{color:var(--muted2);}
+
+/* ═══ HIT RATE ═══ */
+.hit-wrap { display:flex; flex-direction:column; gap:3px; min-width:140px; }
+.hit-row { display:flex; align-items:center; gap:5px; font-size:12px; }
+.hit-label { color:var(--muted2); font-size:11px; width:36px; flex-shrink:0; }
+.hit-bar-bg { flex:1; height:4px; background:var(--border); border-radius:3px; }
+.hit-bar-fill { height:4px; border-radius:3px; transition:width .6s; }
+.hit-pct { font-size:13px; font-weight:700; min-width:30px; text-align:right; }
+.hit-pct.high{color:var(--green);} .hit-pct.mid{color:var(--yellow);} .hit-pct.low{color:var(--red);}
+.hit-avg { font-size:11px; color:var(--muted2); }
+.hit-signals { font-size:11px; color:var(--muted2); margin-top:1px; }
+.hit-loading { font-size:12px; color:var(--muted2); font-style:italic; }
+
+/* ═══ STATUS / STRIKE ═══ */
+.status-pill { font-size:12px; font-weight:700; letter-spacing:.05em; padding:3px 9px; border-radius:10px; text-transform:uppercase; display:inline-block; }
+.status-triggered { background:rgba(167,139,250,.15); color:var(--purple); border:1px solid rgba(167,139,250,.35); }
+.status-warm      { background:rgba(251,191,36,.1);   color:var(--yellow); border:1px solid rgba(251,191,36,.3); }
+.status-watch     { background:rgba(96,165,250,.1);   color:var(--blue);   border:1px solid rgba(96,165,250,.25); }
+.status-waiting   { background:rgba(122,122,154,.1);  color:var(--muted);  border:1px solid rgba(122,122,154,.2); }
+.strike-rec { font-size:13px; color:var(--purple); font-weight:700; }
+.strike-rec.na { color:var(--muted2); font-weight:400; }
+
+/* ═══ NOTES ═══ */
+.note-cell { display:flex; align-items:center; gap:5px; min-width:120px; }
+.note-input { background:transparent; border:none; border-bottom:1px dashed var(--border); color:var(--muted); font-size:12px; font-family:Tahoma,Geneva,sans-serif; width:110px; padding:2px 4px; transition:all .2s; }
+.note-input:focus { outline:none; border-bottom-color:var(--purple); color:var(--text); background:var(--bg3); border-radius:3px 3px 0 0; }
+.note-input::placeholder { color:var(--muted2); font-style:italic; }
+
+/* ═══ LOADING / ANIMS ═══ */
+.loading-row td { text-align:center; padding:40px; color:var(--muted2); font-size:15px; }
+.spinner { display:inline-block; width:18px; height:18px; margin-right:8px; border:2px solid var(--border); border-top-color:var(--purple); border-radius:50%; animation:spin .8s linear infinite; vertical-align:middle; }
+@keyframes spin { to{transform:rotate(360deg);} }
+@keyframes fg { 0%{background:rgba(52,211,153,.25);}100%{background:transparent;} }
+@keyframes fr { 0%{background:rgba(248,113,113,.25);}100%{background:transparent;} }
+@keyframes flash-trigger { 0%,100%{box-shadow:0 0 0 rgba(167,139,250,0);} 50%{box-shadow:0 0 20px rgba(167,139,250,.6);} }
 .fg{animation:fg .7s ease-out;} .fr{animation:fr .7s ease-out;}
-@media(max-width:700px){ td,th{padding:5px 6px;} .prog-track{width:50px;} .bp-grid{grid-template-columns:1fr 1fr;} }
+.row-flash { animation:flash-trigger 1s ease-in-out 3; }
 
-/* HIT RATE */
-.hit-wrap{display:flex;flex-direction:column;gap:3px;min-width:140px;}
-.hit-row{display:flex;align-items:center;gap:6px;font-size:13px;}
-.hit-label{color:#5a5a7a;font-size:12px;width:38px;flex-shrink:0;}
-.hit-bar-bg{flex:1;height:5px;background:#1e1e35;border-radius:3px;}
-.hit-bar-fill{height:5px;border-radius:3px;transition:width .6s;}
-.hit-pct{font-size:13px;font-weight:700;min-width:32px;text-align:right;}
-.hit-pct.high{color:#34d399;} .hit-pct.mid{color:#fbbf24;} .hit-pct.low{color:#f87171;}
-.hit-avg{font-size:11px;color:#7a7a9a;}
-.hit-loading{font-size:12px;color:#5a5a7a;font-style:italic;}
-.hit-signals{font-size:11px;color:#5a5a7a;margin-top:1px;}
-
-/* CHECKLIST SCAN */
-.checklist-scan{background:#0d0d1a;border:1px solid rgba(167,139,250,.4);border-radius:12px;padding:16px 18px;margin-bottom:14px;display:none;}
-.cs-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
-.cs-title{font-size:16px;font-weight:700;color:#a78bfa;}
-.cs-scanning{font-size:13px;color:#7a7a9a;font-style:italic;}
-.cs-stock-block{background:#12122a;border:1px solid #2a2a3e;border-radius:10px;padding:14px 16px;margin-bottom:10px;}
-.cs-stock-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.cs-sym{font-size:16px;font-weight:700;color:#e2e2f0;}
-.cs-price{font-size:15px;color:#7a7a9a;}
-.cs-verdict{font-size:13px;font-weight:700;padding:3px 10px;border-radius:5px;}
-.cs-verdict.go{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3);}
-.cs-verdict.caution{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
-.cs-verdict.stop{background:rgba(248,113,113,.12);color:#f87171;border:1px solid rgba(248,113,113,.25);}
-.cs-checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:7px;margin-bottom:10px;}
-.cs-check{display:flex;align-items:flex-start;gap:8px;font-size:14px;padding:6px 10px;border-radius:7px;background:#0d0d1a;border:1px solid #1e1e35;}
-.cs-check .ci{font-size:15px;flex-shrink:0;margin-top:1px;}
-.cs-check .ct{color:#e2e2f0;line-height:1.4;}
-.cs-check .ct .sub{display:block;font-size:12px;color:#7a7a9a;margin-top:2px;}
-.cs-check.pass{border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.04);}
-.cs-check.fail{border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.05);}
-.cs-check.warn{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.04);}
-.cs-check.loading{opacity:.5;}
-.cs-news{margin-top:8px;}
-.cs-news-title{font-size:13px;font-weight:700;color:#7a7a9a;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;}
-.cs-news-item{font-size:13px;color:#b0b0cc;padding:4px 0;border-bottom:1px solid #1e1e35;line-height:1.4;}
-.cs-news-item:last-child{border-bottom:none;}
-.cs-news-item a{color:#a78bfa;text-decoration:none;}
-.cs-news-item a:hover{text-decoration:underline;}
+/* ═══ MOBILE CARDS ═══ */
+@media(max-width:680px){
+  .tbl-wrap { display:none; }
+  .mobile-cards { display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+  .m-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+  .m-card.triggered { border-color:rgba(167,139,250,.5); background:rgba(167,139,250,.05); animation:flash-trigger 1s ease-in-out 3; }
+  .m-card.warm { border-color:rgba(251,191,36,.4); }
+  .m-card.watch { border-color:rgba(96,165,250,.3); }
+  .m-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .m-sym { font-size:17px; font-weight:700; color:var(--text); }
+  .m-price { font-size:15px; font-weight:700; }
+  .m-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:6px; font-size:13px; }
+  .m-label { color:var(--muted2); margin-right:3px; }
+  .m-bottom { display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
+  .m-note { width:100%; margin-top:6px; }
+  .m-note input { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:5px; padding:5px 8px; color:var(--text); font-size:13px; font-family:Tahoma,Geneva,sans-serif; }
+}
+@media(min-width:681px){ .mobile-cards { display:none; } }
 </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <div class="header">
   <div class="brand-wrap">
     <div class="brand-icon">SF</div>
@@ -222,10 +267,13 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
     </div>
   </div>
   <div class="hright">
-    <div class="scan-time">⏰ Scan at 3:30 PM ET</div>
-    <div id="clock">--:--:-- --</div>
+    <div class="countdown-wrap">
+      <div class="countdown-label">⏰ Next Scan</div>
+      <div class="countdown-time" id="countdown">--:--:--</div>
+    </div>
+    <div id="clock" style="font-size:14px;font-weight:700;">--:--:-- --</div>
     <div id="mktBadge" class="market-badge closed">CLOSED</div>
-    <div class="power-badge" onclick="setFilter('triggered',null)" title="Show only triggered">
+    <div class="power-badge" onclick="setFilter('triggered',null)" title="Show triggered">
       <div class="pb-num" id="powerCount">0</div>
       <div class="pb-label">POWER<br>OPTIONS</div>
     </div>
@@ -233,15 +281,28 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
       <div class="dot off" id="wsDot"></div>
       <span class="ws-status" id="wsStatus">Disconnected</span>
     </div>
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️ Light</button>
   </div>
 </div>
 
+<!-- DAILY SUMMARY -->
+<div class="summary-bar">
+  <div class="sum-card triggered"><div class="sum-num" id="sum-triggered">0</div><div class="sum-label">⚡ Triggered</div></div>
+  <div class="sum-card warm"><div class="sum-num" id="sum-warm">0</div><div class="sum-label">🔶 Warm</div></div>
+  <div class="sum-card watch"><div class="sum-num" id="sum-watch">0</div><div class="sum-label">👁 Watch</div></div>
+  <div class="sum-card" style="border-color:var(--muted2)"><div class="sum-num" id="sum-waiting" style="color:var(--muted)">31</div><div class="sum-label">💤 Waiting</div></div>
+  <div class="sum-card best"><div class="sum-num" id="sum-best">—</div><div class="sum-label">🏆 Best Hit Rate</div></div>
+  <div class="sum-card" style="border-color:rgba(52,211,153,.3)"><div class="sum-num" id="sum-starred" style="color:var(--yellow)">0</div><div class="sum-label">⭐ Watching</div></div>
+</div>
+
+<!-- API KEY -->
 <div class="api-row">
   <label>FINNHUB API KEY:</label>
   <input id="apiKey" type="password" placeholder="Paste your Finnhub API key…">
   <button class="btn-start" onclick="startScanner()">▶ SCAN</button>
 </div>
 
+<!-- BLUEPRINT -->
 <div class="blueprint-panel">
   <div class="bp-title">📋 Overnight Stock Flip Blueprint — Active Rules</div>
   <div class="bp-grid">
@@ -257,11 +318,11 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
 </div>
 
 <div class="rules-bar">
-  <div class="rule-chip"><div class="dot-sm" style="background:#a78bfa"></div><strong>TRIGGERED</strong> ≥ trigger % drop from prev close</div>
-  <div class="rule-chip"><div class="dot-sm" style="background:#fbbf24"></div><strong>WARM</strong> 50–99% progress</div>
-  <div class="rule-chip"><div class="dot-sm" style="background:#60a5fa"></div><strong>WATCH</strong> 25–49% progress</div>
-  <div class="rule-chip"><div class="dot-sm" style="background:#34d399"></div>Confirm: No earnings · No catalyst · Normal+ volume</div>
-  <div class="rule-chip"><div class="dot-sm" style="background:#f87171"></div>Never chase non-triggers</div>
+  <div class="rule-chip"><div class="dot-sm" style="background:var(--purple)"></div><strong>TRIGGERED</strong> ≥ trigger % drop from prev close</div>
+  <div class="rule-chip"><div class="dot-sm" style="background:var(--yellow)"></div><strong>WARM</strong> 50–99% progress</div>
+  <div class="rule-chip"><div class="dot-sm" style="background:var(--blue)"></div><strong>WATCH</strong> 25–49% progress</div>
+  <div class="rule-chip"><div class="dot-sm" style="background:var(--green)"></div>Confirm: No earnings · No catalyst · Normal+ volume</div>
+  <div class="rule-chip"><div class="dot-sm" style="background:var(--red)"></div>Never chase non-triggers</div>
 </div>
 
 <div class="checklist">
@@ -279,10 +340,10 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
 <div class="exit-guide">
   <div class="exit-title">🚪 Exit Scenarios — Next Morning</div>
   <div class="exit-grid">
-    <div class="exit-card"><div class="exit-scenario" style="color:#34d399">📈 Gap Up</div><div class="exit-action">Take profits at open, or trail stop for more</div></div>
-    <div class="exit-card"><div class="exit-scenario" style="color:#fbbf24">➡️ Flat Open</div><div class="exit-action">Wait 30 min — cut by 10 AM if no movement</div></div>
-    <div class="exit-card"><div class="exit-scenario" style="color:#f87171">📉 Gap Down</div><div class="exit-action">Cut immediately — no hoping</div></div>
-    <div class="exit-card"><div class="exit-scenario" style="color:#f87171">🛑 Stop Loss</div><div class="exit-action">Option down 50% → cut, no questions asked</div></div>
+    <div class="exit-card"><div class="exit-scenario" style="color:var(--green)">📈 Gap Up</div><div class="exit-action">Take profits at open, or trail stop</div></div>
+    <div class="exit-card"><div class="exit-scenario" style="color:var(--yellow)">➡️ Flat Open</div><div class="exit-action">Wait 30 min — cut by 10 AM if flat</div></div>
+    <div class="exit-card"><div class="exit-scenario" style="color:var(--red)">📉 Gap Down</div><div class="exit-action">Cut immediately — no hoping</div></div>
+    <div class="exit-card"><div class="exit-scenario" style="color:var(--red)">🛑 Stop Loss</div><div class="exit-action">Option down 50% → cut immediately</div></div>
   </div>
 </div>
 
@@ -294,36 +355,30 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
   </div>
   <div id="csBlocks"></div>
 </div>
+<div class="alert-box" id="alertBox" style="display:none"></div>
 
-<!-- FALLBACK SIMPLE ALERT (hidden when checklist is shown) -->
-<div class="alert-box" id="alertBox" style="display:none">
-  <div class="alert-title">🚨 FLIP SETUP DETECTED — Confirm before entry (3:30–3:40 PM ET)</div>
-  <ul class="alert-list" id="alertList"></ul>
-</div>
-
-<!-- SEARCH BAR -->
+<!-- SEARCH -->
 <div class="search-bar">
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
     <input class="search-input" id="searchInput" type="text" placeholder="Search ticker… (e.g. JPM, TSLA)" autocomplete="off" oninput="handleSearch(this.value)" onkeydown="searchKeydown(event)">
     <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
   </div>
-  <span style="font-size:14px;color:#5a5a7a;">Search existing stocks or type a new ticker to add it</span>
+  <span style="font-size:13px;color:var(--muted2);">Search existing or type a new ticker to add</span>
 </div>
 
-<!-- ADD STOCK PANEL -->
 <div class="add-panel" id="addPanel">
   <span class="add-panel-msg">📊 <span class="add-panel-sym" id="addSym"></span> is not on the scanner —</span>
   <button class="btn-add" id="btnAdd" onclick="addCustomStock()">+ Add for This Session</button>
-  <button class="btn-save-perm" id="btnSavePerm" onclick="showSavePermanently()">💾 Save Permanently</button>
+  <button class="btn-save-perm" onclick="showSavePermanently()">💾 Save Permanently</button>
   <button class="btn-cancel-s" onclick="clearSearch()">Cancel</button>
 </div>
 
-<!-- SAVE PERMANENTLY MODAL -->
+<!-- SAVE MODAL -->
 <div class="modal-overlay" id="saveModal" onclick="if(event.target===this)closeModal()">
   <div class="modal-box">
     <div class="modal-title">💾 Save Permanently to Scanner</div>
-    <div class="modal-sub">Copy the line below, then paste it into the <strong>TICKERS</strong> list in your GitHub file to make this stock permanent.</div>
+    <div class="modal-sub">Copy the line below, then paste it into the <strong>TICKERS</strong> list in your GitHub file.</div>
     <div class="modal-code" id="modalCode"></div>
     <div class="modal-steps">
       <strong>Steps:</strong><br>
@@ -333,7 +388,7 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
       4. Press <strong>Ctrl+F</strong> and search for <strong>{s:'CVX'</strong><br>
       5. Paste the copied line on a new line right above or below it<br>
       6. Click <strong>Commit changes</strong> → <strong>Commit changes</strong><br>
-      7. Wait 2 minutes, then refresh — your stock will be there permanently!
+      7. Wait 2 minutes and refresh!
     </div>
     <div class="modal-btns">
       <button class="btn-copy" id="btnCopyCode" onclick="copyModalCode()">📋 Copy Code</button>
@@ -342,19 +397,23 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
   </div>
 </div>
 
+<!-- FILTER BAR -->
 <div class="filter-bar">
-  <span style="font-size:15px;color:#5a5a7a;font-weight:700;">SHOW:</span>
+  <span style="font-size:13px;color:var(--muted2);font-weight:700;">SHOW:</span>
   <button class="filter-btn active" onclick="setFilter('all',this)">All <span class="filter-cnt" id="cnt-all">31</span></button>
   <button class="filter-btn" onclick="setFilter('triggered',this)">⚡ Triggered <span class="filter-cnt" id="cnt-triggered">0</span></button>
   <button class="filter-btn" onclick="setFilter('warm',this)">🔶 Warm <span class="filter-cnt" id="cnt-warm">0</span></button>
   <button class="filter-btn" onclick="setFilter('watch',this)">👁 Watch <span class="filter-cnt" id="cnt-watch">0</span></button>
   <button class="filter-btn" onclick="setFilter('waiting',this)">💤 Waiting <span class="filter-cnt" id="cnt-waiting">31</span></button>
+  <button class="filter-btn" onclick="setFilter('starred',this)">⭐ Watching <span class="filter-cnt" id="cnt-starred">0</span></button>
 </div>
 
+<!-- DESKTOP TABLE -->
 <div class="tbl-wrap">
 <table>
   <thead>
     <tr>
+      <th>⭐</th>
       <th>Symbol / 📈</th>
       <th>Price</th>
       <th>Chg %</th>
@@ -363,13 +422,17 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
       <th>Historical Hit Rate</th>
       <th>Strike Rec.</th>
       <th>Status</th>
+      <th>Notes</th>
     </tr>
   </thead>
   <tbody id="tbody">
-    <tr class="loading-row"><td colspan="7"><span class="spinner"></span> Enter your Finnhub API key above and click SCAN</td></tr>
+    <tr class="loading-row"><td colspan="10"><span class="spinner"></span> Enter your Finnhub API key above and click SCAN</td></tr>
   </tbody>
 </table>
 </div>
+
+<!-- MOBILE CARDS -->
+<div class="mobile-cards" id="mobileCards"></div>
 
 <script>
 const TICKERS = [
@@ -406,8 +469,13 @@ const TICKERS = [
   {s:'BRK-B', trigger:-1.00},
 ];
 
-let prices={}, ws=null, filterMode='all';
+let prices={}, ws=null, filterMode='all', customStocks=[];
+let starred = new Set(JSON.parse(localStorage.getItem('flip_starred')||'[]'));
+let notes   = JSON.parse(localStorage.getItem('flip_notes')||'{}');
+let bestHitRate = {sym:'—', rate:0};
+const STATUS_ORDER={triggered:0,warm:1,watch:2,waiting:3};
 
+// ══ CLOCK + COUNTDOWN ══
 function updateClock(){
   const now=new Date();
   const et=new Date(now.toLocaleString('en-US',{timeZone:'America/New_York'}));
@@ -416,14 +484,44 @@ function updateClock(){
     `${String(h%12||12).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} ${h>=12?'PM':'AM'} ET`;
   const b=document.getElementById('mktBadge');
   const day=et.getDay(),mins=h*60+m;
-  if(day===0||day===6){b.className='market-badge closed';b.textContent='WEEKEND';return;}
-  if(mins>=570&&mins<960){b.className='market-badge open';b.textContent='MARKET OPEN';}
+  if(day===0||day===6){b.className='market-badge closed';b.textContent='WEEKEND';}
+  else if(mins>=570&&mins<960){b.className='market-badge open';b.textContent='MARKET OPEN';}
   else if(mins>=240&&mins<570){b.className='market-badge pre';b.textContent='PRE-MARKET';}
   else if(mins>=960&&mins<1200){b.className='market-badge pre';b.textContent='AFTER HOURS';}
   else{b.className='market-badge closed';b.textContent='CLOSED';}
+  updateCountdown(et,day,mins,s);
+}
+
+function updateCountdown(et,day,mins,s){
+  const cd=document.getElementById('countdown');
+  // Scan window: 3:30 PM ET = 930 mins, 3:40 PM = 940 mins
+  const scanMins=930;
+  if(day===0||day===6){cd.textContent='Weekend';cd.className='countdown-time';return;}
+  if(mins>=930&&mins<940){cd.textContent='SCAN NOW!';cd.className='countdown-time open-now';return;}
+  if(mins>=940){cd.textContent='Done today';cd.className='countdown-time';return;}
+  // Calc time to 3:30 PM
+  const totalSecs=scanMins*60-(et.getHours()*3600+et.getMinutes()*60+et.getSeconds());
+  if(totalSecs<=0){cd.textContent='SCAN NOW!';cd.className='countdown-time open-now';return;}
+  const hh=Math.floor(totalSecs/3600);
+  const mm=Math.floor((totalSecs%3600)/60);
+  const ss=totalSecs%60;
+  cd.textContent=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  cd.className=totalSecs<=300?'countdown-time imminent':'countdown-time';
 }
 setInterval(updateClock,1000);updateClock();
 
+// ══ THEME ══
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme',isDark?'light':'dark');
+  document.getElementById('themeBtn').textContent=isDark?'🌙 Dark':'☀️ Light';
+  localStorage.setItem('flip_theme',isDark?'light':'dark');
+}
+// Load saved theme
+(()=>{const t=localStorage.getItem('flip_theme')||'dark';document.documentElement.setAttribute('data-theme',t);document.getElementById('themeBtn').textContent=t==='dark'?'☀️ Light':'🌙 Dark';})();
+
+// ══ START ══
 function startScanner(){
   const key=document.getElementById('apiKey').value.trim();
   if(!key){alert('Please enter your Finnhub API key.');return;}
@@ -432,28 +530,79 @@ function startScanner(){
   connectWS(key);
 }
 
+// ══ SKELETON ══
 function renderSkeleton(){
-  document.getElementById('tbody').innerHTML=TICKERS.map(t=>`
+  const rows=TICKERS.map(t=>`
     <tr id="row-${t.s}" data-sym="${t.s}" data-status="waiting">
+      <td><button class="star-btn ${starred.has(t.s)?'starred':''}" onclick="toggleStar('${t.s}')" title="Watch this stock">⭐</button></td>
       <td><div class="sym-wrap">
         <a class="sym" href="https://www.tradingview.com/chart/?symbol=${t.s}" target="_blank">${t.s}</a>
         <span class="trig-badge" id="badge-${t.s}">⚡ TRIGGERED</span>
-        <a class="chart-btn" href="https://www.tradingview.com/chart/?symbol=${t.s}" target="_blank">📈 Chart</a>
+        <a class="chart-btn" href="https://www.tradingview.com/chart/?symbol=${t.s}" target="_blank">📈</a>
       </div></td>
       <td><span class="price" id="price-${t.s}">—</span></td>
       <td><span class="chg neu" id="chg-${t.s}">—</span></td>
       <td><span class="trig-pct">${t.trigger.toFixed(2)}%</span></td>
       <td><div class="prog-wrap">
-        <div class="prog-track"><div class="prog-fill" id="bar-${t.s}" style="width:0%;background:#5a5a7a"></div></div>
+        <div class="prog-track"><div class="prog-fill" id="bar-${t.s}" style="width:0%;background:var(--muted2)"></div></div>
         <span class="prog-pct none" id="prog-${t.s}">0%</span>
       </div></td>
-      <td><div class="hit-wrap" id="hit-${t.s}"><span class="hit-loading">Loading history…</span></div></td>
+      <td><div class="hit-wrap" id="hit-${t.s}"><span class="hit-loading">Loading…</span></div></td>
       <td><span class="strike-rec na" id="strike-${t.s}">—</span></td>
       <td><span class="status-pill status-waiting" id="status-${t.s}">Waiting</span></td>
+      <td><div class="note-cell"><input class="note-input" id="note-${t.s}" placeholder="Add note…" value="${notes[t.s]||''}" onchange="saveNote('${t.s}',this.value)" maxlength="60"></div></td>
     </tr>`).join('');
+  document.getElementById('tbody').innerHTML=rows;
+  renderMobileCards();
   updateCounts();
 }
 
+// ══ MOBILE CARDS ══
+function renderMobileCards(){
+  const container=document.getElementById('mobileCards');
+  container.innerHTML=TICKERS.map(t=>`
+    <div class="m-card" id="mcard-${t.s}" data-sym="${t.s}" data-status="waiting">
+      <div class="m-top">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="star-btn ${starred.has(t.s)?'starred':''}" onclick="toggleStar('${t.s}')">⭐</button>
+          <a class="m-sym" href="https://www.tradingview.com/chart/?symbol=${t.s}" target="_blank" style="text-decoration:none;color:var(--text)">${t.s}</a>
+          <span id="mbadge-${t.s}" style="display:none;font-size:11px;font-weight:700;color:var(--purple)">⚡</span>
+        </div>
+        <span class="status-pill status-waiting" id="mstatus-${t.s}">Waiting</span>
+      </div>
+      <div class="m-row">
+        <div><span class="m-label">Price</span><span class="price" id="mprice-${t.s}">—</span></div>
+        <div><span class="m-label">Chg</span><span class="chg neu" id="mchg-${t.s}">—</span></div>
+        <div><span class="m-label">Trigger</span><span style="color:var(--purple);font-weight:700">${t.trigger.toFixed(2)}%</span></div>
+      </div>
+      <div class="m-row">
+        <div><span class="m-label">Progress</span><span class="prog-pct none" id="mprog-${t.s}">0%</span></div>
+        <div><span class="m-label">Strike</span><span class="strike-rec na" id="mstrike-${t.s}">—</span></div>
+      </div>
+      <div class="m-note"><input style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:5px 8px;color:var(--text);font-size:13px;font-family:Tahoma,Geneva,sans-serif;width:100%" placeholder="Add note…" value="${notes[t.s]||''}" onchange="saveNote('${t.s}',this.value)" maxlength="60"></div>
+    </div>`).join('');
+}
+
+// ══ STAR / NOTES ══
+function toggleStar(sym){
+  if(starred.has(sym)) starred.delete(sym); else starred.add(sym);
+  localStorage.setItem('flip_starred',JSON.stringify([...starred]));
+  // Update both desktop and mobile star buttons
+  document.querySelectorAll(`[onclick="toggleStar('${sym}')"]`).forEach(b=>{
+    b.classList.toggle('starred',starred.has(sym));
+  });
+  updateCounts(); sortTable();
+}
+function saveNote(sym,val){
+  if(val) notes[sym]=val; else delete notes[sym];
+  localStorage.setItem('flip_notes',JSON.stringify(notes));
+  // Sync both desktop and mobile note inputs
+  const d=document.getElementById(`note-${sym}`);
+  const mCards=document.getElementById('mobileCards');
+  if(mCards){const inputs=mCards.querySelectorAll(`[onchange*="${sym}"]`);inputs.forEach(i=>i.value=val);}
+}
+
+// ══ WEBSOCKET ══
 function connectWS(key){
   if(ws){try{ws.close();}catch(e){}}
   const dot=document.getElementById('wsDot'),lbl=document.getElementById('wsStatus');
@@ -483,36 +632,30 @@ function connectWS(key){
   };
 }
 
-// ── PRICE PERSISTENCE ──
-function savePrices(){
-  try{ localStorage.setItem('flip_prices', JSON.stringify(prices)); }catch(e){}
-}
+// ══ PERSISTENCE ══
+function savePrices(){try{localStorage.setItem('flip_prices',JSON.stringify(prices));}catch(e){}}
 function restorePrices(){
   try{
     const raw=localStorage.getItem('flip_prices');
-    if(!raw) return;
+    if(!raw)return;
     const saved=JSON.parse(raw);
     Object.keys(saved).forEach(sym=>{
       prices[sym]=saved[sym];
-      const p=saved[sym];
-      updateRow(sym,Number(p.price),Number(p.chgPct)||0,undefined);
+      updateRow(sym,Number(saved[sym].price),Number(saved[sym].chgPct)||0,undefined);
     });
   }catch(e){}
 }
-
-// ── Fetch closing prices via Finnhub REST (works open or closed, 24/7) ──
 async function fetchClosingPrices(key){
-  const BATCH=6, DELAY=300;
+  const BATCH=6,DELAY=300;
   for(let i=0;i<TICKERS.length;i+=BATCH){
     const batch=TICKERS.slice(i,i+BATCH);
     await Promise.allSettled(batch.map(async t=>{
       try{
         const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=${t.s}&token=${key}`,{signal:AbortSignal.timeout(6000)});
-        if(!r.ok) return;
+        if(!r.ok)return;
         const d=await r.json();
-        if(!d||!d.c) return;
-        const price=d.c;
-        const prevClose=d.pc||d.c;
+        if(!d||!d.c)return;
+        const price=d.c,prevClose=d.pc||d.c;
         const chgPct=prevClose?((price-prevClose)/prevClose*100):0;
         const old=prices[t.s]?.price;
         prices[t.s]={price,prevClose,chgPct};
@@ -523,73 +666,113 @@ async function fetchClosingPrices(key){
   }
 }
 
+// ══ UPDATE ROW ══
+let prevStatuses={};
 function updateRow(sym,price,chgPct,old){
-  const row=document.getElementById(`row-${sym}`);if(!row)return;
+  const row=document.getElementById(`row-${sym}`);
+  const mcard=document.getElementById(`mcard-${sym}`);
+  if(!row&&!mcard)return;
   const ticker=TICKERS.find(t=>t.s===sym);if(!ticker)return;
+
+  // Price + flash
   const pEl=document.getElementById(`price-${sym}`);
-  if(pEl){pEl.textContent='$'+price.toFixed(2);if(old!==undefined){row.classList.remove('fg','fr');void row.offsetWidth;row.classList.add(price>old?'fg':'fr');}}
+  const mpEl=document.getElementById(`mprice-${sym}`);
+  if(pEl){pEl.textContent='$'+price.toFixed(2);if(old!==undefined&&row){row.classList.remove('fg','fr');void row.offsetWidth;row.classList.add(price>old?'fg':'fr');}}
+  if(mpEl) mpEl.textContent='$'+price.toFixed(2);
+
+  // Chg%
+  const cText=(chgPct>=0?'+':'')+chgPct.toFixed(2)+'%';
+  const cClass='chg '+(chgPct>0?'pos':chgPct<0?'neg':'neu');
   const cEl=document.getElementById(`chg-${sym}`);
-  if(cEl){cEl.textContent=(chgPct>=0?'+':'')+chgPct.toFixed(2)+'%';cEl.className='chg '+(chgPct>0?'pos':chgPct<0?'neg':'neu');}
+  const mcEl=document.getElementById(`mchg-${sym}`);
+  if(cEl){cEl.textContent=cText;cEl.className=cClass;}
+  if(mcEl){mcEl.textContent=cText;mcEl.className=cClass;}
+
+  // Progress
   const progress=chgPct<=0?Math.min(100,Math.abs(chgPct)/Math.abs(ticker.trigger)*100):0;
-  const pEl2=document.getElementById(`prog-${sym}`),bEl=document.getElementById(`bar-${sym}`);
-  if(pEl2){pEl2.textContent=progress.toFixed(0)+'%';pEl2.className='prog-pct '+(progress>=100?'danger':progress>=50?'warn':progress>=25?'mild':'none');}
-  if(bEl){bEl.style.width=Math.min(progress,100)+'%';bEl.style.background=progress>=100?'#a78bfa':progress>=50?'#fbbf24':progress>=25?'#60a5fa':'#5a5a7a';}
+  const pEl2=document.getElementById(`prog-${sym}`);
+  const bEl=document.getElementById(`bar-${sym}`);
+  const mpEl2=document.getElementById(`mprog-${sym}`);
+  const pClass='prog-pct '+(progress>=100?'danger':progress>=50?'warn':progress>=25?'mild':'none');
+  const barColor=progress>=100?'var(--purple)':progress>=50?'var(--yellow)':progress>=25?'var(--blue)':'var(--muted2)';
+  if(pEl2){pEl2.textContent=progress.toFixed(0)+'%';pEl2.className=pClass;}
+  if(mpEl2){mpEl2.textContent=progress.toFixed(0)+'%';mpEl2.className=pClass;}
+  if(bEl){bEl.style.width=Math.min(progress,100)+'%';bEl.style.background=barColor;}
+
+  // Status
   const triggered=progress>=100,warm=progress>=50&&progress<100,watch=progress>=25&&progress<50;
-  const badgeEl=document.getElementById(`badge-${sym}`),statusEl=document.getElementById(`status-${sym}`),strikeEl=document.getElementById(`strike-${sym}`);
+  const newStatus=triggered?'triggered':warm?'warm':watch?'watch':'waiting';
+  const prevStatus=prevStatuses[sym];
+
+  // Flash row when newly triggered
+  if(newStatus==='triggered'&&prevStatus!=='triggered'){
+    if(row){row.classList.add('row-flash');setTimeout(()=>row.classList.remove('row-flash'),3500);}
+    if(mcard){mcard.classList.add('row-flash');setTimeout(()=>mcard.classList.remove('row-flash'),3500);}
+  }
+  prevStatuses[sym]=newStatus;
+
+  const badgeEl=document.getElementById(`badge-${sym}`);
+  const mbadgeEl=document.getElementById(`mbadge-${sym}`);
+  const statusEl=document.getElementById(`status-${sym}`);
+  const mstatusEl=document.getElementById(`mstatus-${sym}`);
+  const strikeEl=document.getElementById(`strike-${sym}`);
+  const mstrikeEl=document.getElementById(`mstrike-${sym}`);
+
   if(triggered){
-    row.dataset.status='triggered';row.classList.add('triggered');
-    if(badgeEl)badgeEl.style.display='inline';
+    if(row){row.dataset.status='triggered';row.classList.add('triggered');}
+    if(mcard){mcard.dataset.status='triggered';mcard.className='m-card triggered';}
+    if(badgeEl) badgeEl.style.display='inline';
+    if(mbadgeEl) mbadgeEl.style.display='inline';
     if(statusEl){statusEl.textContent='⚡ TRIGGERED';statusEl.className='status-pill status-triggered';}
+    if(mstatusEl){mstatusEl.textContent='⚡ TRIGGERED';mstatusEl.className='status-pill status-triggered';}
     if(strikeEl){strikeEl.textContent='ATM / 1 OTM';strikeEl.className='strike-rec';}
+    if(mstrikeEl){mstrikeEl.textContent='ATM / 1 OTM';mstrikeEl.className='strike-rec';}
   } else if(warm){
-    row.dataset.status='warm';row.classList.remove('triggered');
-    if(badgeEl)badgeEl.style.display='none';
+    if(row){row.dataset.status='warm';row.classList.remove('triggered');}
+    if(mcard){mcard.dataset.status='warm';mcard.className='m-card warm';}
+    if(badgeEl) badgeEl.style.display='none';
+    if(mbadgeEl) mbadgeEl.style.display='none';
     if(statusEl){statusEl.textContent='🔶 Warm';statusEl.className='status-pill status-warm';}
+    if(mstatusEl){mstatusEl.textContent='🔶 Warm';mstatusEl.className='status-pill status-warm';}
     if(strikeEl){strikeEl.textContent='Monitor';strikeEl.className='strike-rec na';}
+    if(mstrikeEl){mstrikeEl.textContent='Monitor';mstrikeEl.className='strike-rec na';}
   } else if(watch){
-    row.dataset.status='watch';row.classList.remove('triggered');
-    if(badgeEl)badgeEl.style.display='none';
+    if(row){row.dataset.status='watch';row.classList.remove('triggered');}
+    if(mcard){mcard.dataset.status='watch';mcard.className='m-card watch';}
+    if(badgeEl) badgeEl.style.display='none';
+    if(mbadgeEl) mbadgeEl.style.display='none';
     if(statusEl){statusEl.textContent='👁 Watch';statusEl.className='status-pill status-watch';}
+    if(mstatusEl){mstatusEl.textContent='👁 Watch';mstatusEl.className='status-pill status-watch';}
     if(strikeEl){strikeEl.textContent='—';strikeEl.className='strike-rec na';}
+    if(mstrikeEl){mstrikeEl.textContent='—';mstrikeEl.className='strike-rec na';}
   } else {
-    row.dataset.status='waiting';row.classList.remove('triggered');
-    if(badgeEl)badgeEl.style.display='none';
+    if(row){row.dataset.status='waiting';row.classList.remove('triggered');}
+    if(mcard){mcard.dataset.status='waiting';mcard.className='m-card';}
+    if(badgeEl) badgeEl.style.display='none';
+    if(mbadgeEl) mbadgeEl.style.display='none';
     if(statusEl){statusEl.textContent='Waiting';statusEl.className='status-pill status-waiting';}
+    if(mstatusEl){mstatusEl.textContent='Waiting';mstatusEl.className='status-pill status-waiting';}
     if(strikeEl){strikeEl.textContent='—';strikeEl.className='strike-rec na';}
+    if(mstrikeEl){mstrikeEl.textContent='—';mstrikeEl.className='strike-rec na';}
   }
   updateAlerts();updateCounts();applyFilter();savePrices();
 }
 
-// ══════════════════════════════════════════════
-//  CHECKLIST SCAN — runs automatically on trigger
-// ══════════════════════════════════════════════
-let checklistRunning = false;
-let lastTriggeredSet = '';
-
+// ══ CHECKLIST SCAN ══
+let lastTriggeredSet='';
 async function updateAlerts(){
-  const triggered = TICKERS.filter(t=>{
-    const r=document.getElementById(`row-${t.s}`);
-    return r && r.dataset.status==='triggered';
+  const triggered=TICKERS.filter(t=>{
+    const r=document.getElementById(`row-${t.s}`)||document.getElementById(`mcard-${t.s}`);
+    return r&&r.dataset.status==='triggered';
   });
-
-  const scanPanel = document.getElementById('checklistScan');
-  const alertBox  = document.getElementById('alertBox');
-
-  if(triggered.length === 0){
-    scanPanel.style.display='none';
-    alertBox.style.display='none';
-    lastTriggeredSet='';
-    return;
-  }
-
-  // Only re-run if triggered set changed
-  const trigKey = triggered.map(t=>t.s).join(',');
-  if(trigKey === lastTriggeredSet) return;
-  lastTriggeredSet = trigKey;
-
+  const scanPanel=document.getElementById('checklistScan');
+  if(triggered.length===0){scanPanel.style.display='none';lastTriggeredSet='';return;}
+  const trigKey=triggered.map(t=>t.s).join(',');
+  if(trigKey===lastTriggeredSet)return;
+  lastTriggeredSet=trigKey;
   scanPanel.style.display='block';
-  document.getElementById('csScanStatus').textContent = 'Scanning…';
-  document.getElementById('csBlocks').innerHTML = triggered.map(t=>`
+  document.getElementById('csScanStatus').textContent='Scanning…';
+  document.getElementById('csBlocks').innerHTML=triggered.map(t=>`
     <div class="cs-stock-block" id="csb-${t.s}">
       <div class="cs-stock-header">
         <span class="cs-sym">${t.s}</span>
@@ -602,141 +785,26 @@ async function updateAlerts(){
         <div class="cs-check loading" id="cc-sec-${t.s}"><span class="ci">⏳</span><span class="ct">Checking sector…</span></div>
         <div class="cs-check loading" id="cc-news-${t.s}"><span class="ci">⏳</span><span class="ct">Checking news…</span></div>
       </div>
-      <div class="cs-news" id="csn-${t.s}"></div>
+      <div id="csn-${t.s}"></div>
     </div>`).join('');
-
-  const key = document.getElementById('apiKey').value.trim();
-  const today = new Date().toISOString().slice(0,10);
-
+  const key=document.getElementById('apiKey').value.trim();
+  const today=new Date().toISOString().slice(0,10);
   await Promise.allSettled(triggered.map(async t=>{
-    const p = prices[t.s];
-    const priceEl = document.getElementById(`csp-${t.s}`);
-    if(priceEl && p) priceEl.textContent = `$${p.price.toFixed(2)} (${p.chgPct>=0?'+':''}${p.chgPct.toFixed(2)}%)`;
-
-    let flags = 0; // count of fails/warns
-
-    // ── 1. EARNINGS CHECK ──
-    try{
-      const r = await fetch(`https://finnhub.io/api/v1/calendar/earnings?from=${today}&to=${today}&symbol=${t.s}&token=${key}`,{signal:AbortSignal.timeout(6000)});
-      const d = await r.json();
-      const hasEarnings = d?.earningsCalendar?.length > 0;
-      const el = document.getElementById(`cc-earn-${t.s}`);
-      if(el){
-        if(hasEarnings){
-          flags++;
-          el.className='cs-check fail';
-          el.innerHTML=`<span class="ci">❌</span><span class="ct">Earnings today/after hours — SKIP TRADE<span class="sub">High risk of gap against you</span></span>`;
-        } else {
-          el.className='cs-check pass';
-          el.innerHTML=`<span class="ci">✅</span><span class="ct">No earnings today<span class="sub">Earnings calendar clear</span></span>`;
-        }
-      }
-    }catch(e){
-      const el=document.getElementById(`cc-earn-${t.s}`);
-      if(el){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Earnings check unavailable<span class="sub">Verify manually</span></span>`;}
-    }
-
-    // ── 2. VOLUME CHECK ──
-    try{
-      const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${t.s}&token=${key}`,{signal:AbortSignal.timeout(6000)});
-      const d = await r.json();
-      const el = document.getElementById(`cc-vol-${t.s}`);
-      if(el){
-        // Finnhub quote doesn't have volume directly, so we check price action consistency
-        // Use the high/low spread vs current price as a volume proxy signal
-        if(d && d.h && d.l && d.c){
-          const spread = ((d.h - d.l) / d.l * 100).toFixed(1);
-          const aboveAvg = spread > 1.5;
-          if(aboveAvg){
-            el.className='cs-check pass';
-            el.innerHTML=`<span class="ci">✅</span><span class="ct">Volume elevated (range ${spread}%)<span class="sub">Active trading — good for options liquidity</span></span>`;
-          } else {
-            el.className='cs-check warn';
-            el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Volume may be light (range ${spread}%)<span class="sub">Check options bid/ask spread before entering</span></span>`;
-          }
-        }
-      }
-    }catch(e){
-      const el=document.getElementById(`cc-vol-${t.s}`);
-      if(el){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Volume check unavailable<span class="sub">Verify manually</span></span>`;}
-    }
-
-    // ── 3. SECTOR COLLAPSE CHECK ──
-    // Check if SPY itself is also deeply down (sector-wide collapse signal)
-    try{
-      const spyPrice = prices['SPY'];
-      const el = document.getElementById(`cc-sec-${t.s}`);
-      if(el){
-        if(spyPrice && spyPrice.chgPct <= -1.5){
-          flags++;
-          el.className='cs-check fail';
-          el.innerHTML=`<span class="ci">❌</span><span class="ct">Broad market down ${spyPrice.chgPct.toFixed(2)}% (SPY)<span class="sub">Possible sector-wide collapse — use caution</span></span>`;
-        } else if(spyPrice && spyPrice.chgPct <= -0.75){
-          el.className='cs-check warn';
-          el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Market soft — SPY ${spyPrice.chgPct.toFixed(2)}%<span class="sub">Watch for broader weakness before entry</span></span>`;
-        } else if(spyPrice){
-          el.className='cs-check pass';
-          el.innerHTML=`<span class="ci">✅</span><span class="ct">No sector collapse — SPY ${spyPrice.chgPct>=0?'+':''}${spyPrice.chgPct.toFixed(2)}%<span class="sub">Broad market stable</span></span>`;
-        } else {
-          el.className='cs-check warn';
-          el.innerHTML=`<span class="ci">⚠️</span><span class="ct">SPY not loaded yet<span class="sub">Add SPY to scanner for sector check</span></span>`;
-        }
-      }
-    }catch(e){}
-
-    // ── 4. NEWS HEADLINES CHECK ──
-    try{
-      const r = await fetch(`https://finnhub.io/api/v1/company-news?symbol=${t.s}&from=${today}&to=${today}&token=${key}`,{signal:AbortSignal.timeout(6000)});
-      const d = await r.json();
-      const el  = document.getElementById(`cc-news-${t.s}`);
-      const nel = document.getElementById(`csn-${t.s}`);
-
-      // Flag words that suggest a skip
-      const RED_FLAGS = ['resign','scandal','fraud','lawsuit','investigation','recall','downgrade','bankruptcy','sec ','warning','miss','layoff','cut'];
-      let headline_flag = false;
-      const topNews = (d||[]).slice(0,5);
-
-      if(el){
-        const combined = topNews.map(n=>n.headline.toLowerCase()).join(' ');
-        headline_flag = RED_FLAGS.some(w=>combined.includes(w));
-        if(headline_flag){
-          flags++;
-          el.className='cs-check fail';
-          el.innerHTML=`<span class="ci">🔴</span><span class="ct">Negative news detected — read headlines below<span class="sub">CEO/scandal/legal risk — verify before entry</span></span>`;
-        } else if(topNews.length === 0){
-          el.className='cs-check pass';
-          el.innerHTML=`<span class="ci">✅</span><span class="ct">No news today<span class="sub">Clean — no catalyst risk detected</span></span>`;
-        } else {
-          el.className='cs-check pass';
-          el.innerHTML=`<span class="ci">✅</span><span class="ct">News appears clean<span class="sub">No red-flag keywords detected — see headlines below</span></span>`;
-        }
-      }
-
-      if(nel && topNews.length > 0){
-        nel.innerHTML = `<div class="cs-news-title">📰 Today's Headlines</div>` +
-          topNews.map(n=>`<div class="cs-news-item"><a href="${n.url}" target="_blank">${n.headline}</a> <span style="color:#5a5a7a;font-size:11px;">— ${n.source}</span></div>`).join('');
-      }
-    }catch(e){
-      const el=document.getElementById(`cc-news-${t.s}`);
-      if(el){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">News check unavailable<span class="sub">Check manually before entry</span></span>`;}
-    }
-
-    // ── OVERALL VERDICT ──
-    const vEl = document.getElementById(`csv-${t.s}`);
-    if(vEl){
-      if(flags === 0){
-        vEl.textContent='✅ CLEAR TO TRADE';vEl.className='cs-verdict go';
-      } else if(flags === 1){
-        vEl.textContent='⚠️ PROCEED WITH CAUTION';vEl.className='cs-verdict caution';
-      } else {
-        vEl.textContent='🛑 DO NOT TRADE';vEl.className='cs-verdict stop';
-      }
-    }
+    const p=prices[t.s];
+    const priceEl=document.getElementById(`csp-${t.s}`);
+    if(priceEl&&p) priceEl.textContent=`$${p.price.toFixed(2)} (${p.chgPct>=0?'+':''}${p.chgPct.toFixed(2)}%)`;
+    let flags=0;
+    try{const r=await fetch(`https://finnhub.io/api/v1/calendar/earnings?from=${today}&to=${today}&symbol=${t.s}&token=${key}`,{signal:AbortSignal.timeout(6000)});const d=await r.json();const has=d?.earningsCalendar?.length>0;const el=document.getElementById(`cc-earn-${t.s}`);if(el){if(has){flags++;el.className='cs-check fail';el.innerHTML=`<span class="ci">❌</span><span class="ct">Earnings today — SKIP TRADE<span class="sub">High gap risk</span></span>`;}else{el.className='cs-check pass';el.innerHTML=`<span class="ci">✅</span><span class="ct">No earnings today<span class="sub">Calendar clear</span></span>`;}}}catch(e){const el=document.getElementById(`cc-earn-${t.s}`);if(el){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Earnings check unavailable<span class="sub">Verify manually</span></span>`;}}
+    try{const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=${t.s}&token=${key}`,{signal:AbortSignal.timeout(6000)});const d=await r.json();const el=document.getElementById(`cc-vol-${t.s}`);if(el&&d&&d.h&&d.l){const spread=((d.h-d.l)/d.l*100).toFixed(1);const ok=spread>1.5;if(ok){el.className='cs-check pass';el.innerHTML=`<span class="ci">✅</span><span class="ct">Volume elevated (range ${spread}%)<span class="sub">Good options liquidity</span></span>`;}else{el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Volume may be light (range ${spread}%)<span class="sub">Check bid/ask spread</span></span>`;}}}catch(e){const el=document.getElementById(`cc-vol-${t.s}`);if(el){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Volume check unavailable</span>`;}}
+    try{const spyPrice=prices['SPY'];const el=document.getElementById(`cc-sec-${t.s}`);if(el){if(spyPrice&&spyPrice.chgPct<=-1.5){flags++;el.className='cs-check fail';el.innerHTML=`<span class="ci">❌</span><span class="ct">Market down ${spyPrice.chgPct.toFixed(2)}% (SPY)<span class="sub">Possible sector collapse — caution</span></span>`;}else if(spyPrice&&spyPrice.chgPct<=-0.75){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Market soft — SPY ${spyPrice.chgPct.toFixed(2)}%<span class="sub">Watch for broader weakness</span></span>`;}else if(spyPrice){el.className='cs-check pass';el.innerHTML=`<span class="ci">✅</span><span class="ct">No sector collapse — SPY ${spyPrice.chgPct>=0?'+':''}${spyPrice.chgPct.toFixed(2)}%<span class="sub">Market stable</span></span>`;}else{el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">SPY not loaded yet</span>`;}}}catch(e){}
+    try{const r=await fetch(`https://finnhub.io/api/v1/company-news?symbol=${t.s}&from=${today}&to=${today}&token=${key}`,{signal:AbortSignal.timeout(6000)});const d=await r.json();const el=document.getElementById(`cc-news-${t.s}`);const nel=document.getElementById(`csn-${t.s}`);const RED=['resign','scandal','fraud','lawsuit','investigation','recall','downgrade','bankruptcy','warning','miss','layoff','cut'];const top=(d||[]).slice(0,5);if(el){const combined=top.map(n=>n.headline.toLowerCase()).join(' ');const bad=RED.some(w=>combined.includes(w));if(bad){flags++;el.className='cs-check fail';el.innerHTML=`<span class="ci">🔴</span><span class="ct">Negative news detected<span class="sub">Read headlines below before entry</span></span>`;}else if(top.length===0){el.className='cs-check pass';el.innerHTML=`<span class="ci">✅</span><span class="ct">No news today<span class="sub">No catalyst risk</span></span>`;}else{el.className='cs-check pass';el.innerHTML=`<span class="ci">✅</span><span class="ct">News appears clean<span class="sub">No red flags detected</span></span>`;}}if(nel&&top.length>0){nel.innerHTML=`<div class="cs-news-title">📰 Today's Headlines</div>`+top.map(n=>`<div class="cs-news-item"><a href="${n.url}" target="_blank">${n.headline}</a> <span style="font-size:11px;color:var(--muted2)">— ${n.source}</span></div>`).join('');}}catch(e){const el=document.getElementById(`cc-news-${t.s}`);if(el){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">News check unavailable<span class="sub">Check manually</span></span>`;}}
+    const vEl=document.getElementById(`csv-${t.s}`);
+    if(vEl){if(flags===0){vEl.textContent='✅ CLEAR TO TRADE';vEl.className='cs-verdict go';}else if(flags===1){vEl.textContent='⚠️ PROCEED WITH CAUTION';vEl.className='cs-verdict caution';}else{vEl.textContent='🛑 DO NOT TRADE';vEl.className='cs-verdict stop';}}
   }));
-
-  document.getElementById('csScanStatus').textContent = `Scan complete · ${triggered.length} stock${triggered.length>1?'s':''} triggered`;
+  document.getElementById('csScanStatus').textContent=`Scan complete · ${triggered.length} stock${triggered.length>1?'s':''} triggered`;
 }
 
+// ══ FILTER / SORT / COUNTS ══
 function setFilter(f,btn){
   filterMode=f;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
@@ -745,181 +813,153 @@ function setFilter(f,btn){
   applyFilter();
 }
 function applyFilter(){
-  document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>{r.style.display=(filterMode==='all'||r.dataset.status===filterMode)?'':'none';});
+  document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>{
+    const st=r.dataset.status||'waiting';
+    const isStarred=starred.has(r.dataset.sym);
+    const show=filterMode==='all'||st===filterMode||(filterMode==='starred'&&isStarred);
+    r.style.display=show?'':'none';
+  });
+  document.querySelectorAll('#mobileCards .m-card').forEach(r=>{
+    const st=r.dataset.status||'waiting';
+    const isStarred=starred.has(r.dataset.sym);
+    const show=filterMode==='all'||st===filterMode||(filterMode==='starred'&&isStarred);
+    r.style.display=show?'':'none';
+  });
 }
-
-// ── Sort rows: Triggered → Warm → Watch → Waiting, then by progress % descending ──
-const STATUS_ORDER = {triggered:0, warm:1, watch:2, waiting:3};
+const STATUS_ORD={triggered:0,warm:1,watch:2,waiting:3};
 function sortTable(){
-  const tbody = document.getElementById('tbody');
-  const rows = Array.from(tbody.querySelectorAll('tr[data-sym]'));
+  const tbody=document.getElementById('tbody');
+  const rows=Array.from(tbody.querySelectorAll('tr[data-sym]'));
   rows.sort((a,b)=>{
-    const sa = STATUS_ORDER[a.dataset.status||'waiting'] ?? 3;
-    const sb = STATUS_ORDER[b.dataset.status||'waiting'] ?? 3;
-    if(sa !== sb) return sa - sb;
-    // Within same status, sort by progress % descending
-    const pa = parseFloat(document.getElementById(`prog-${a.dataset.sym}`)?.textContent)||0;
-    const pb = parseFloat(document.getElementById(`prog-${b.dataset.sym}`)?.textContent)||0;
-    return pb - pa;
+    const sa=STATUS_ORD[a.dataset.status||'waiting']??3;
+    const sb=STATUS_ORD[b.dataset.status||'waiting']??3;
+    // Stars float to top within their group
+    const stA=starred.has(a.dataset.sym)?-1:0;
+    const stB=starred.has(b.dataset.sym)?-1:0;
+    if(sa!==sb) return sa-sb;
+    if(stA!==stB) return stA-stB;
+    const pa=parseFloat(document.getElementById(`prog-${a.dataset.sym}`)?.textContent)||0;
+    const pb=parseFloat(document.getElementById(`prog-${b.dataset.sym}`)?.textContent)||0;
+    return pb-pa;
   });
   rows.forEach(r=>tbody.appendChild(r));
 }
-
 function updateCounts(){
-  let all=0,trig=0,warm=0,watch=0,waiting=0;
+  let all=0,trig=0,warm=0,watch=0,waiting=0,starCount=0;
   document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>{
-    all++;const st=r.dataset.status||'waiting';
-    if(st==='triggered')trig++;else if(st==='warm')warm++;else if(st==='watch')watch++;else waiting++;
+    all++;
+    const st=r.dataset.status||'waiting';
+    if(st==='triggered')trig++;
+    else if(st==='warm')warm++;
+    else if(st==='watch')watch++;
+    else waiting++;
+    if(starred.has(r.dataset.sym))starCount++;
   });
   document.getElementById('cnt-all').textContent=all;
   document.getElementById('cnt-triggered').textContent=trig;
   document.getElementById('cnt-warm').textContent=warm;
   document.getElementById('cnt-watch').textContent=watch;
   document.getElementById('cnt-waiting').textContent=waiting;
+  document.getElementById('cnt-starred').textContent=starCount;
   document.getElementById('powerCount').textContent=trig;
+  document.getElementById('sum-triggered').textContent=trig;
+  document.getElementById('sum-warm').textContent=warm;
+  document.getElementById('sum-watch').textContent=watch;
+  document.getElementById('sum-waiting').textContent=waiting;
+  document.getElementById('sum-starred').textContent=starCount;
   sortTable();
 }
 
-// ══════════════════════════════════════════════
-//  HISTORICAL HIT RATE
-// ══════════════════════════════════════════════
+// ══ HISTORICAL HIT RATE ══
 async function loadAllHitRates(){
   const PROXIES=[
     s=>`https://corsproxy.io/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${s}?interval=1d&range=1y`)}`,
     s=>`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${s}?interval=1d&range=1y`)}`,
   ];
-  const BATCH=5, DELAY=400;
+  const BATCH=5,DELAY=400;
   for(let i=0;i<TICKERS.length;i+=BATCH){
     const batch=TICKERS.slice(i,i+BATCH);
     await Promise.allSettled(batch.map(t=>calcHitRate(t,PROXIES)));
     if(i+BATCH<TICKERS.length) await new Promise(r=>setTimeout(r,DELAY));
   }
+  document.getElementById('sum-best').textContent=bestHitRate.sym==='—'?'—':`${bestHitRate.sym} ${bestHitRate.rate}%`;
 }
-
-async function calcHitRate(ticker, PROXIES){
-  const el = document.getElementById(`hit-${ticker.s}`);
-  if(!el) return;
-  const sym = ticker.s==='BRK-B'?'BRK-B':ticker.s;
-
+async function calcHitRate(ticker,PROXIES){
+  const el=document.getElementById(`hit-${ticker.s}`);if(!el)return;
   for(const proxy of PROXIES){
     try{
-      const r=await fetch(proxy(sym),{signal:AbortSignal.timeout(8000)});
-      if(!r.ok) continue;
+      const r=await fetch(proxy(ticker.s),{signal:AbortSignal.timeout(8000)});
+      if(!r.ok)continue;
       const d=await r.json();
-      const res=d?.chart?.result?.[0];
-      if(!res) continue;
-      const quotes=res.indicators?.quote?.[0];
-      const closes=quotes?.close, opens=quotes?.open, highs=quotes?.high;
-      if(!closes||closes.length<20) continue;
-
-      let signals=0, openHits=0, highHits=0;
-      let openGainTotal=0, highGainTotal=0;
-
+      const res=d?.chart?.result?.[0];if(!res)continue;
+      const q=res.indicators?.quote?.[0];
+      const closes=q?.close,opens=q?.open,highs=q?.high;
+      if(!closes||closes.length<20)continue;
+      let signals=0,openHits=0,highHits=0,openGain=0,highGain=0;
       for(let i=1;i<closes.length-1;i++){
-        const prev=closes[i-1];
-        const curr=closes[i];
-        if(!prev||!curr) continue;
+        const prev=closes[i-1],curr=closes[i];
+        if(!prev||!curr)continue;
         const chg=(curr-prev)/prev*100;
-
-        // Did this day hit the trigger?
         if(chg<=ticker.trigger){
           signals++;
-          const nextOpen=opens?.[i+1];
-          const nextHigh=highs?.[i+1];
-          const nextClose=closes[i+1];
-          if(nextOpen&&nextOpen>curr){
-            openHits++;
-            openGainTotal+=((nextOpen-curr)/curr*100);
-          }
-          if(nextHigh&&nextHigh>curr){
-            highHits++;
-            highGainTotal+=((nextHigh-curr)/curr*100);
-          }
+          const no=opens?.[i+1],nh=highs?.[i+1];
+          if(no&&no>curr){openHits++;openGain+=((no-curr)/curr*100);}
+          if(nh&&nh>curr){highHits++;highGain+=((nh-curr)/curr*100);}
         }
       }
-
-      if(signals===0){
-        el.innerHTML=`<span class="hit-signals">No signals in past year</span>`;
-        return;
-      }
-
-      const openRate=Math.round(openHits/signals*100);
-      const highRate=Math.round(highHits/signals*100);
-      const openAvg=(openGainTotal/signals).toFixed(1);
-      const highAvg=(highGainTotal/signals).toFixed(1);
-
-      const pctClass=p=>p>=70?'high':p>=50?'mid':'low';
-      const barColor=p=>p>=70?'#34d399':p>=50?'#fbbf24':'#f87171';
-
+      if(signals===0){el.innerHTML=`<span class="hit-signals">No signals in past year</span>`;return;}
+      const oRate=Math.round(openHits/signals*100);
+      const hRate=Math.round(highHits/signals*100);
+      const oAvg=(openGain/signals).toFixed(1);
+      const hAvg=(highGain/signals).toFixed(1);
+      const pc=p=>p>=70?'high':p>=50?'mid':'low';
+      const bc=p=>p>=70?'var(--green)':p>=50?'var(--yellow)':'var(--red)';
       el.innerHTML=`
-        <div class="hit-row">
-          <span class="hit-label">Open</span>
-          <div class="hit-bar-bg"><div class="hit-bar-fill" style="width:${openRate}%;background:${barColor(openRate)}"></div></div>
-          <span class="hit-pct ${pctClass(openRate)}">${openRate}%</span>
-          <span class="hit-avg">avg +${openAvg}%</span>
-        </div>
-        <div class="hit-row">
-          <span class="hit-label">High</span>
-          <div class="hit-bar-bg"><div class="hit-bar-fill" style="width:${highRate}%;background:${barColor(highRate)}"></div></div>
-          <span class="hit-pct ${pctClass(highRate)}">${highRate}%</span>
-          <span class="hit-avg">avg +${highAvg}%</span>
-        </div>
-        <div class="hit-signals">${signals} signal${signals!==1?'s':''} in past year</div>`;
+        <div class="hit-row"><span class="hit-label">Open</span><div class="hit-bar-bg"><div class="hit-bar-fill" style="width:${oRate}%;background:${bc(oRate)}"></div></div><span class="hit-pct ${pc(oRate)}">${oRate}%</span><span class="hit-avg">+${oAvg}%</span></div>
+        <div class="hit-row"><span class="hit-label">High</span><div class="hit-bar-bg"><div class="hit-bar-fill" style="width:${hRate}%;background:${bc(hRate)}"></div></div><span class="hit-pct ${pc(hRate)}">${hRate}%</span><span class="hit-avg">+${hAvg}%</span></div>
+        <div class="hit-signals">${signals} signal${signals!==1?'s':''} · 1yr</div>`;
+      if(hRate>bestHitRate.rate){bestHitRate={sym:ticker.s,rate:hRate};}
       return;
     }catch(e){}
   }
-  if(el) el.innerHTML=`<span class="hit-loading">Data unavailable</span>`;
+  if(el)el.innerHTML=`<span class="hit-loading">Unavailable</span>`;
 }
 
-// ══════════════════════════════════════════════
-//  SAVE PERMANENTLY MODAL
-// ══════════════════════════════════════════════
+// ══ SAVE PERMANENTLY MODAL ══
 function showSavePermanently(){
-  const sym = document.getElementById('addSym').textContent.trim();
-  if(!sym) return;
-  const line = `  {s:'${sym}',   trigger:-3.00},  // ← adjust trigger % to match the blueprint`;
-  document.getElementById('modalCode').textContent = line;
+  const sym=document.getElementById('addSym').textContent.trim();if(!sym)return;
+  document.getElementById('modalCode').textContent=`  {s:'${sym}',   trigger:-3.00},  // ← adjust trigger % to match blueprint`;
   document.getElementById('saveModal').classList.add('open');
 }
 function copyModalCode(){
-  const code = document.getElementById('modalCode').textContent;
-  navigator.clipboard.writeText(code).then(()=>{
-    const btn = document.getElementById('btnCopyCode');
-    btn.textContent='✅ Copied!'; btn.classList.add('copied');
-    setTimeout(()=>{ btn.textContent='📋 Copy Code'; btn.classList.remove('copied'); }, 2500);
+  navigator.clipboard.writeText(document.getElementById('modalCode').textContent).then(()=>{
+    const btn=document.getElementById('btnCopyCode');
+    btn.textContent='✅ Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='📋 Copy Code';btn.classList.remove('copied');},2500);
   });
 }
-function closeModal(){
-  document.getElementById('saveModal').classList.remove('open');
-}
+function closeModal(){document.getElementById('saveModal').classList.remove('open');}
 
-// ══════════════════════════════════════════════
-//  SEARCH + ADD STOCK
-// ══════════════════════════════════════════════
-let customStocks=[];
-
+// ══ SEARCH + ADD ══
 function handleSearch(val){
   const q=val.trim().toUpperCase();
   document.getElementById('searchClear').style.display=q?'block':'none';
   const addPanel=document.getElementById('addPanel');
-  if(!q){ document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>r.style.opacity='1'); applyFilter(); addPanel.style.display='none'; return; }
+  if(!q){document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>r.style.opacity='1');applyFilter();addPanel.style.display='none';return;}
   const allSyms=TICKERS.map(t=>t.s).concat(customStocks);
   const match=allSyms.find(s=>s===q);
   if(match){
-    document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>{ r.style.display=r.dataset.sym===q?'':'none'; r.style.opacity='1'; });
+    document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>{r.style.display=r.dataset.sym===q?'':'none';r.style.opacity='1';});
     addPanel.style.display='none';
   } else {
-    document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>{ r.style.display=''; r.style.opacity=r.dataset.sym.startsWith(q)?'1':'0.3'; });
-    if(q.length>=1&&q.length<=6&&/^[A-Z.\-]+$/.test(q)){
-      document.getElementById('addSym').textContent=q;
-      document.getElementById('btnAdd').dataset.sym=q;
-      addPanel.style.display='flex';
-    } else { addPanel.style.display='none'; }
+    document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>{r.style.display='';r.style.opacity=r.dataset.sym.startsWith(q)?'1':'0.3';});
+    if(q.length>=1&&q.length<=6&&/^[A-Z.\-]+$/.test(q)){document.getElementById('addSym').textContent=q;document.getElementById('btnAdd').dataset.sym=q;addPanel.style.display='flex';}
+    else addPanel.style.display='none';
   }
 }
 function searchKeydown(e){
-  if(e.key==='Enter'){ const q=document.getElementById('searchInput').value.trim().toUpperCase(); if(q&&!TICKERS.map(t=>t.s).concat(customStocks).includes(q)) addCustomStock(q); }
-  if(e.key==='Escape') clearSearch();
+  if(e.key==='Enter'){const q=document.getElementById('searchInput').value.trim().toUpperCase();if(q&&!TICKERS.map(t=>t.s).concat(customStocks).includes(q))addCustomStock(q);}
+  if(e.key==='Escape')clearSearch();
 }
 function clearSearch(){
   document.getElementById('searchInput').value='';
@@ -929,8 +969,7 @@ function clearSearch(){
   applyFilter();
 }
 function addCustomStock(sym){
-  sym=sym||document.getElementById('btnAdd').dataset.sym;
-  if(!sym) return;
+  sym=sym||document.getElementById('btnAdd').dataset.sym;if(!sym)return;
   sym=sym.toUpperCase();
   if(customStocks.includes(sym)||TICKERS.find(t=>t.s===sym)){
     clearSearch();
@@ -939,46 +978,42 @@ function addCustomStock(sym){
     return;
   }
   customStocks.push(sym);
-  // Default trigger -3% for custom stocks
-  const customTrigger=-3.00;
+  const ct=-3.00;
+  TICKERS.push({s:sym,trigger:ct});
   const tbody=document.getElementById('tbody');
   const tr=document.createElement('tr');
-  tr.id=`row-${sym}`; tr.dataset.sym=sym; tr.dataset.status='waiting';
+  tr.id=`row-${sym}`;tr.dataset.sym=sym;tr.dataset.status='waiting';
   tr.innerHTML=`
+    <td><button class="star-btn" onclick="toggleStar('${sym}')">⭐</button></td>
     <td><div class="sym-wrap">
       <a class="sym" href="https://www.tradingview.com/chart/?symbol=${sym}" target="_blank">${sym}</a>
-      <span class="custom-tag">+ Added</span>
-      <span class="trig-badge" id="badge-${sym}" style="display:none">⚡ TRIGGERED</span>
-      <a class="chart-btn" href="https://www.tradingview.com/chart/?symbol=${sym}" target="_blank">📈 Chart</a>
+      <span class="custom-tag">+</span>
+      <span class="trig-badge" id="badge-${sym}" style="display:none">⚡</span>
+      <a class="chart-btn" href="https://www.tradingview.com/chart/?symbol=${sym}" target="_blank">📈</a>
     </div></td>
     <td><span class="price" id="price-${sym}">—</span></td>
     <td><span class="chg neu" id="chg-${sym}">—</span></td>
-    <td><span class="trig-pct">${customTrigger.toFixed(2)}%</span></td>
-    <td><div class="prog-wrap"><div class="prog-track"><div class="prog-fill" id="bar-${sym}" style="width:0%;background:#5a5a7a"></div></div><span class="prog-pct none" id="prog-${sym}">0%</span></div></td>
+    <td><span class="trig-pct">${ct.toFixed(2)}%</span></td>
+    <td><div class="prog-wrap"><div class="prog-track"><div class="prog-fill" id="bar-${sym}" style="width:0%"></div></div><span class="prog-pct none" id="prog-${sym}">0%</span></div></td>
+    <td><div class="hit-wrap" id="hit-${sym}"><span class="hit-loading">Loading…</span></div></td>
     <td><span class="strike-rec na" id="strike-${sym}">—</span></td>
-    <td><span class="status-pill status-waiting" id="status-${sym}">Waiting</span></td>`;
+    <td><span class="status-pill status-waiting" id="status-${sym}">Waiting</span></td>
+    <td><input class="note-input" id="note-${sym}" placeholder="Add note…" onchange="saveNote('${sym}',this.value)" maxlength="60"></td>`;
   tbody.appendChild(tr);
-  // Push to TICKERS so updateRow works
-  TICKERS.push({s:sym, trigger:customTrigger});
-  clearSearch();
-  tr.scrollIntoView({behavior:'smooth',block:'center'});
-  if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:'subscribe',symbol:sym}));
+  clearSearch();tr.scrollIntoView({behavior:'smooth',block:'center'});
+  if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'subscribe',symbol:sym}));
   updateCounts();
 }
 
+// ══ AUTO-LOAD ══
 window.addEventListener('load',()=>{
   const baked='d7ubki9r01qnv95n0argd7ubki9r01qnv95n0as0';
   const saved=localStorage.getItem('finnhub_key')||baked;
   document.getElementById('apiKey').value=saved;
-  // 1. Render rows
   renderSkeleton();
-  // 2. Restore cached prices instantly
   restorePrices();
-  // 3. Fetch fresh closing prices from Finnhub REST (works open or closed, 24/7)
   fetchClosingPrices(saved);
-  // 4. Connect WebSocket for live ticks during market hours
   connectWS(saved);
-  // 5. Load historical hit rates from Yahoo Finance
   loadAllHitRates();
   if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
 });
