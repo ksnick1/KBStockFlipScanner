@@ -733,6 +733,24 @@ function setFilter(f,btn){
 function applyFilter(){
   document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>{r.style.display=(filterMode==='all'||r.dataset.status===filterMode)?'':'none';});
 }
+
+// ── Sort rows: Triggered → Warm → Watch → Waiting, then by progress % descending ──
+const STATUS_ORDER = {triggered:0, warm:1, watch:2, waiting:3};
+function sortTable(){
+  const tbody = document.getElementById('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr[data-sym]'));
+  rows.sort((a,b)=>{
+    const sa = STATUS_ORDER[a.dataset.status||'waiting'] ?? 3;
+    const sb = STATUS_ORDER[b.dataset.status||'waiting'] ?? 3;
+    if(sa !== sb) return sa - sb;
+    // Within same status, sort by progress % descending
+    const pa = parseFloat(document.getElementById(`prog-${a.dataset.sym}`)?.textContent)||0;
+    const pb = parseFloat(document.getElementById(`prog-${b.dataset.sym}`)?.textContent)||0;
+    return pb - pa;
+  });
+  rows.forEach(r=>tbody.appendChild(r));
+}
+
 function updateCounts(){
   let all=0,trig=0,warm=0,watch=0,waiting=0;
   document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>{
@@ -745,6 +763,7 @@ function updateCounts(){
   document.getElementById('cnt-watch').textContent=watch;
   document.getElementById('cnt-waiting').textContent=waiting;
   document.getElementById('powerCount').textContent=trig;
+  sortTable();
 }
 
 // ══════════════════════════════════════════════
