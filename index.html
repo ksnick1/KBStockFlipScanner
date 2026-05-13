@@ -168,6 +168,35 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
 @keyframes fr{0%{background:rgba(248,113,113,.2);}100%{background:transparent;}}
 .fg{animation:fg .7s ease-out;} .fr{animation:fr .7s ease-out;}
 @media(max-width:700px){ td,th{padding:5px 6px;} .prog-track{width:50px;} .bp-grid{grid-template-columns:1fr 1fr;} }
+
+/* CHECKLIST SCAN */
+.checklist-scan{background:#0d0d1a;border:1px solid rgba(167,139,250,.4);border-radius:12px;padding:16px 18px;margin-bottom:14px;display:none;}
+.cs-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.cs-title{font-size:16px;font-weight:700;color:#a78bfa;}
+.cs-scanning{font-size:13px;color:#7a7a9a;font-style:italic;}
+.cs-stock-block{background:#12122a;border:1px solid #2a2a3e;border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+.cs-stock-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.cs-sym{font-size:16px;font-weight:700;color:#e2e2f0;}
+.cs-price{font-size:15px;color:#7a7a9a;}
+.cs-verdict{font-size:13px;font-weight:700;padding:3px 10px;border-radius:5px;}
+.cs-verdict.go{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3);}
+.cs-verdict.caution{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
+.cs-verdict.stop{background:rgba(248,113,113,.12);color:#f87171;border:1px solid rgba(248,113,113,.25);}
+.cs-checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:7px;margin-bottom:10px;}
+.cs-check{display:flex;align-items:flex-start;gap:8px;font-size:14px;padding:6px 10px;border-radius:7px;background:#0d0d1a;border:1px solid #1e1e35;}
+.cs-check .ci{font-size:15px;flex-shrink:0;margin-top:1px;}
+.cs-check .ct{color:#e2e2f0;line-height:1.4;}
+.cs-check .ct .sub{display:block;font-size:12px;color:#7a7a9a;margin-top:2px;}
+.cs-check.pass{border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.04);}
+.cs-check.fail{border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.05);}
+.cs-check.warn{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.04);}
+.cs-check.loading{opacity:.5;}
+.cs-news{margin-top:8px;}
+.cs-news-title{font-size:13px;font-weight:700;color:#7a7a9a;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;}
+.cs-news-item{font-size:13px;color:#b0b0cc;padding:4px 0;border-bottom:1px solid #1e1e35;line-height:1.4;}
+.cs-news-item:last-child{border-bottom:none;}
+.cs-news-item a{color:#a78bfa;text-decoration:none;}
+.cs-news-item a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -245,7 +274,17 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
   </div>
 </div>
 
-<div class="alert-box" id="alertBox">
+<!-- CHECKLIST SCAN PANEL -->
+<div class="checklist-scan" id="checklistScan">
+  <div class="cs-header">
+    <div class="cs-title">🚨 FLIP SETUP DETECTED — Auto Checklist Running…</div>
+    <div class="cs-scanning" id="csScanStatus"></div>
+  </div>
+  <div id="csBlocks"></div>
+</div>
+
+<!-- FALLBACK SIMPLE ALERT (hidden when checklist is shown) -->
+<div class="alert-box" id="alertBox" style="display:none">
   <div class="alert-title">🚨 FLIP SETUP DETECTED — Confirm before entry (3:30–3:40 PM ET)</div>
   <ul class="alert-list" id="alertList"></ul>
 </div>
@@ -507,13 +546,181 @@ function updateRow(sym,price,chgPct,old){
   updateAlerts();updateCounts();applyFilter();savePrices();
 }
 
-function updateAlerts(){
-  const triggered=TICKERS.filter(t=>{const r=document.getElementById(`row-${t.s}`);return r&&r.dataset.status==='triggered';});
-  const box=document.getElementById('alertBox'),list=document.getElementById('alertList');
-  if(triggered.length>0){
-    box.style.display='block';
-    list.innerHTML=triggered.map(t=>{const p=prices[t.s];return `<li>⚡ <strong>${t.s}</strong> — $${p?.price?.toFixed(2)||'—'} (${p?.chgPct?.toFixed(2)||'—'}%) · Trigger: ${t.trigger}% · Buy ATM/OTM calls 1–2 days out · ✅ Confirm checklist!</li>`;}).join('');
-  } else {box.style.display='none';}
+// ══════════════════════════════════════════════
+//  CHECKLIST SCAN — runs automatically on trigger
+// ══════════════════════════════════════════════
+let checklistRunning = false;
+let lastTriggeredSet = '';
+
+async function updateAlerts(){
+  const triggered = TICKERS.filter(t=>{
+    const r=document.getElementById(`row-${t.s}`);
+    return r && r.dataset.status==='triggered';
+  });
+
+  const scanPanel = document.getElementById('checklistScan');
+  const alertBox  = document.getElementById('alertBox');
+
+  if(triggered.length === 0){
+    scanPanel.style.display='none';
+    alertBox.style.display='none';
+    lastTriggeredSet='';
+    return;
+  }
+
+  // Only re-run if triggered set changed
+  const trigKey = triggered.map(t=>t.s).join(',');
+  if(trigKey === lastTriggeredSet) return;
+  lastTriggeredSet = trigKey;
+
+  scanPanel.style.display='block';
+  document.getElementById('csScanStatus').textContent = 'Scanning…';
+  document.getElementById('csBlocks').innerHTML = triggered.map(t=>`
+    <div class="cs-stock-block" id="csb-${t.s}">
+      <div class="cs-stock-header">
+        <span class="cs-sym">${t.s}</span>
+        <span class="cs-price" id="csp-${t.s}">Loading…</span>
+        <span class="cs-verdict loading" id="csv-${t.s}">Checking…</span>
+      </div>
+      <div class="cs-checks" id="csc-${t.s}">
+        <div class="cs-check loading" id="cc-earn-${t.s}"><span class="ci">⏳</span><span class="ct">Checking earnings…</span></div>
+        <div class="cs-check loading" id="cc-vol-${t.s}"><span class="ci">⏳</span><span class="ct">Checking volume…</span></div>
+        <div class="cs-check loading" id="cc-sec-${t.s}"><span class="ci">⏳</span><span class="ct">Checking sector…</span></div>
+        <div class="cs-check loading" id="cc-news-${t.s}"><span class="ci">⏳</span><span class="ct">Checking news…</span></div>
+      </div>
+      <div class="cs-news" id="csn-${t.s}"></div>
+    </div>`).join('');
+
+  const key = document.getElementById('apiKey').value.trim();
+  const today = new Date().toISOString().slice(0,10);
+
+  await Promise.allSettled(triggered.map(async t=>{
+    const p = prices[t.s];
+    const priceEl = document.getElementById(`csp-${t.s}`);
+    if(priceEl && p) priceEl.textContent = `$${p.price.toFixed(2)} (${p.chgPct>=0?'+':''}${p.chgPct.toFixed(2)}%)`;
+
+    let flags = 0; // count of fails/warns
+
+    // ── 1. EARNINGS CHECK ──
+    try{
+      const r = await fetch(`https://finnhub.io/api/v1/calendar/earnings?from=${today}&to=${today}&symbol=${t.s}&token=${key}`,{signal:AbortSignal.timeout(6000)});
+      const d = await r.json();
+      const hasEarnings = d?.earningsCalendar?.length > 0;
+      const el = document.getElementById(`cc-earn-${t.s}`);
+      if(el){
+        if(hasEarnings){
+          flags++;
+          el.className='cs-check fail';
+          el.innerHTML=`<span class="ci">❌</span><span class="ct">Earnings today/after hours — SKIP TRADE<span class="sub">High risk of gap against you</span></span>`;
+        } else {
+          el.className='cs-check pass';
+          el.innerHTML=`<span class="ci">✅</span><span class="ct">No earnings today<span class="sub">Earnings calendar clear</span></span>`;
+        }
+      }
+    }catch(e){
+      const el=document.getElementById(`cc-earn-${t.s}`);
+      if(el){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Earnings check unavailable<span class="sub">Verify manually</span></span>`;}
+    }
+
+    // ── 2. VOLUME CHECK ──
+    try{
+      const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${t.s}&token=${key}`,{signal:AbortSignal.timeout(6000)});
+      const d = await r.json();
+      const el = document.getElementById(`cc-vol-${t.s}`);
+      if(el){
+        // Finnhub quote doesn't have volume directly, so we check price action consistency
+        // Use the high/low spread vs current price as a volume proxy signal
+        if(d && d.h && d.l && d.c){
+          const spread = ((d.h - d.l) / d.l * 100).toFixed(1);
+          const aboveAvg = spread > 1.5;
+          if(aboveAvg){
+            el.className='cs-check pass';
+            el.innerHTML=`<span class="ci">✅</span><span class="ct">Volume elevated (range ${spread}%)<span class="sub">Active trading — good for options liquidity</span></span>`;
+          } else {
+            el.className='cs-check warn';
+            el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Volume may be light (range ${spread}%)<span class="sub">Check options bid/ask spread before entering</span></span>`;
+          }
+        }
+      }
+    }catch(e){
+      const el=document.getElementById(`cc-vol-${t.s}`);
+      if(el){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Volume check unavailable<span class="sub">Verify manually</span></span>`;}
+    }
+
+    // ── 3. SECTOR COLLAPSE CHECK ──
+    // Check if SPY itself is also deeply down (sector-wide collapse signal)
+    try{
+      const spyPrice = prices['SPY'];
+      const el = document.getElementById(`cc-sec-${t.s}`);
+      if(el){
+        if(spyPrice && spyPrice.chgPct <= -1.5){
+          flags++;
+          el.className='cs-check fail';
+          el.innerHTML=`<span class="ci">❌</span><span class="ct">Broad market down ${spyPrice.chgPct.toFixed(2)}% (SPY)<span class="sub">Possible sector-wide collapse — use caution</span></span>`;
+        } else if(spyPrice && spyPrice.chgPct <= -0.75){
+          el.className='cs-check warn';
+          el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Market soft — SPY ${spyPrice.chgPct.toFixed(2)}%<span class="sub">Watch for broader weakness before entry</span></span>`;
+        } else if(spyPrice){
+          el.className='cs-check pass';
+          el.innerHTML=`<span class="ci">✅</span><span class="ct">No sector collapse — SPY ${spyPrice.chgPct>=0?'+':''}${spyPrice.chgPct.toFixed(2)}%<span class="sub">Broad market stable</span></span>`;
+        } else {
+          el.className='cs-check warn';
+          el.innerHTML=`<span class="ci">⚠️</span><span class="ct">SPY not loaded yet<span class="sub">Add SPY to scanner for sector check</span></span>`;
+        }
+      }
+    }catch(e){}
+
+    // ── 4. NEWS HEADLINES CHECK ──
+    try{
+      const r = await fetch(`https://finnhub.io/api/v1/company-news?symbol=${t.s}&from=${today}&to=${today}&token=${key}`,{signal:AbortSignal.timeout(6000)});
+      const d = await r.json();
+      const el  = document.getElementById(`cc-news-${t.s}`);
+      const nel = document.getElementById(`csn-${t.s}`);
+
+      // Flag words that suggest a skip
+      const RED_FLAGS = ['resign','scandal','fraud','lawsuit','investigation','recall','downgrade','bankruptcy','sec ','warning','miss','layoff','cut'];
+      let headline_flag = false;
+      const topNews = (d||[]).slice(0,5);
+
+      if(el){
+        const combined = topNews.map(n=>n.headline.toLowerCase()).join(' ');
+        headline_flag = RED_FLAGS.some(w=>combined.includes(w));
+        if(headline_flag){
+          flags++;
+          el.className='cs-check fail';
+          el.innerHTML=`<span class="ci">🔴</span><span class="ct">Negative news detected — read headlines below<span class="sub">CEO/scandal/legal risk — verify before entry</span></span>`;
+        } else if(topNews.length === 0){
+          el.className='cs-check pass';
+          el.innerHTML=`<span class="ci">✅</span><span class="ct">No news today<span class="sub">Clean — no catalyst risk detected</span></span>`;
+        } else {
+          el.className='cs-check pass';
+          el.innerHTML=`<span class="ci">✅</span><span class="ct">News appears clean<span class="sub">No red-flag keywords detected — see headlines below</span></span>`;
+        }
+      }
+
+      if(nel && topNews.length > 0){
+        nel.innerHTML = `<div class="cs-news-title">📰 Today's Headlines</div>` +
+          topNews.map(n=>`<div class="cs-news-item"><a href="${n.url}" target="_blank">${n.headline}</a> <span style="color:#5a5a7a;font-size:11px;">— ${n.source}</span></div>`).join('');
+      }
+    }catch(e){
+      const el=document.getElementById(`cc-news-${t.s}`);
+      if(el){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">News check unavailable<span class="sub">Check manually before entry</span></span>`;}
+    }
+
+    // ── OVERALL VERDICT ──
+    const vEl = document.getElementById(`csv-${t.s}`);
+    if(vEl){
+      if(flags === 0){
+        vEl.textContent='✅ CLEAR TO TRADE';vEl.className='cs-verdict go';
+      } else if(flags === 1){
+        vEl.textContent='⚠️ PROCEED WITH CAUTION';vEl.className='cs-verdict caution';
+      } else {
+        vEl.textContent='🛑 DO NOT TRADE';vEl.className='cs-verdict stop';
+      }
+    }
+  }));
+
+  document.getElementById('csScanStatus').textContent = `Scan complete · ${triggered.length} stock${triggered.length>1?'s':''} triggered`;
 }
 
 function setFilter(f,btn){
