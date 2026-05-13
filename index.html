@@ -11,7 +11,7 @@
 :root {
   --bg:#0a0a0f; --bg2:#0d0d1a; --bg3:#12122a; --bg4:#1a1a2e;
   --border:#2a2a3e; --border2:#1e1e35;
-  --text:#e2e2f0; --muted:#7a7a9a; --muted2:#5a5a7a;
+  --text:#e2e2f0; --muted:#a0a0c0; --muted2:#8080a8;
   --purple:#a78bfa; --purple-dim:rgba(167,139,250,.12);
   --green:#34d399; --red:#f87171; --yellow:#fbbf24; --blue:#60a5fa;
   --card-bg:var(--bg2); --input-bg:var(--bg3);
@@ -19,7 +19,7 @@
 [data-theme="light"] {
   --bg:#f0f0f8; --bg2:#ffffff; --bg3:#f5f5fc; --bg4:#eaeaf5;
   --border:#d0d0e8; --border2:#e0e0f0;
-  --text:#1a1a2e; --muted:#6060a0; --muted2:#8080b0;
+  --text:#1a1a2e; --muted:#4a4a80; --muted2:#6a6aaa;
   --card-bg:#ffffff; --input-bg:#f5f5fc;
 }
 
@@ -29,14 +29,13 @@ body { background:var(--bg); color:var(--text); font-family:Tahoma,Geneva,sans-s
 /* ═══ HEADER ═══ */
 .header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding-bottom:12px; border-bottom:2px solid var(--border); flex-wrap:wrap; gap:10px; }
 .brand-wrap { display:flex; align-items:center; gap:10px; }
-.brand-icon { width:38px; height:38px; background:linear-gradient(135deg,#1a1a3a,#4a3a8a); border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; color:var(--purple); box-shadow:0 0 18px rgba(167,139,250,.3); flex-shrink:0; }
+.brand-icon { width:38px; height:38px; background:linear-gradient(135deg,#1a1a3a,#4a3a8a); border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px; color:var(--purple); box-shadow:0 0 18px rgba(167,139,250,.3); flex-shrink:0; }
 .brand-name { font-size:20px; font-weight:700; color:var(--purple); }
-.brand-sub  { font-size:13px; color:var(--muted2); margin-top:2px; font-weight:700; }
 .hright { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 
 /* ═══ COUNTDOWN ═══ */
 .countdown-wrap { display:flex; flex-direction:column; align-items:center; background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:4px 12px; }
-.countdown-label { font-size:11px; color:var(--muted2); font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+.countdown-label { font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
 .countdown-time { font-size:16px; font-weight:700; color:var(--yellow); font-variant-numeric:tabular-nums; }
 .countdown-time.imminent { color:var(--red); animation:pulse-red 1s infinite; }
 .countdown-time.open-now { color:var(--green); }
@@ -69,7 +68,7 @@ body { background:var(--bg); color:var(--text); font-family:Tahoma,Geneva,sans-s
 .summary-bar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
 .sum-card { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:8px 14px; display:flex; flex-direction:column; align-items:center; min-width:90px; }
 .sum-num  { font-size:20px; font-weight:700; }
-.sum-label{ font-size:12px; color:var(--muted2); margin-top:1px; }
+.sum-label{ font-size:13px; color:var(--muted); margin-top:1px; font-weight:600; }
 .sum-card.triggered .sum-num { color:var(--purple); }
 .sum-card.warm      .sum-num { color:var(--yellow); }
 .sum-card.watch     .sum-num { color:var(--blue); }
@@ -85,10 +84,10 @@ body { background:var(--bg); color:var(--text); font-family:Tahoma,Geneva,sans-s
 
 /* ═══ BLUEPRINT / RULES / CHECKLIST / EXIT ═══ */
 .blueprint-panel,.rules-bar,.checklist,.exit-guide { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin-bottom:12px; }
-.bp-title,.exit-title { font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+.bp-title,.exit-title { font-size:14px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
 .bp-grid,.exit-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:8px; }
 .bp-item,.exit-card { background:var(--bg3); border:1px solid var(--border2); border-radius:7px; padding:8px 12px; }
-.bp-label { font-size:12px; color:var(--muted2); text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px; }
+.bp-label { font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px; font-weight:600; }
 .bp-val { font-size:14px; font-weight:700; color:var(--text); }
 .bp-val.purple{color:var(--purple);} .bp-val.green{color:var(--green);} .bp-val.red{color:var(--red);} .bp-val.amber{color:var(--yellow);}
 .rules-bar { display:flex; gap:8px; flex-wrap:wrap; padding:10px 14px; }
@@ -121,7 +120,7 @@ body { background:var(--bg); color:var(--text); font-family:Tahoma,Geneva,sans-s
 .cs-check.pass { border-color:rgba(52,211,153,.25); background:rgba(52,211,153,.04); }
 .cs-check.fail { border-color:rgba(248,113,113,.3); background:rgba(248,113,113,.05); }
 .cs-check.warn { border-color:rgba(251,191,36,.3); background:rgba(251,191,36,.04); }
-.cs-check.loading { opacity:.5; }
+.cs-check.loading { opacity:.6; }
 .cs-news-title { font-size:12px; font-weight:700; color:var(--muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:.05em; }
 .cs-news-item { font-size:13px; color:var(--muted); padding:4px 0; border-bottom:1px solid var(--border2); line-height:1.4; }
 .cs-news-item:last-child { border-bottom:none; }
@@ -148,7 +147,7 @@ body { background:var(--bg); color:var(--text); font-family:Tahoma,Geneva,sans-s
 .modal-overlay.open { display:flex; }
 .modal-box { background:var(--bg2); border:1px solid var(--purple); border-radius:14px; padding:24px; max-width:640px; width:100%; box-shadow:0 0 40px rgba(167,139,250,.2); }
 .modal-title { font-size:17px; font-weight:700; color:var(--purple); margin-bottom:6px; }
-.modal-sub { font-size:14px; color:var(--muted2); margin-bottom:14px; line-height:1.5; }
+.modal-sub { font-size:14px; color:var(--muted); margin-bottom:14px; line-height:1.5; }
 .modal-steps { font-size:14px; color:var(--muted); margin-bottom:14px; line-height:1.8; }
 .modal-steps strong { color:var(--text); }
 .modal-code { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; font-family:monospace; font-size:13px; color:var(--purple); white-space:pre-wrap; word-break:break-all; max-height:180px; overflow-y:auto; margin-bottom:12px; }
@@ -166,7 +165,7 @@ body { background:var(--bg); color:var(--text); font-family:Tahoma,Geneva,sans-s
 /* ═══ TABLE ═══ */
 .tbl-wrap { overflow-x:auto; }
 table { width:100%; border-collapse:collapse; }
-thead th { background:var(--bg2); color:var(--muted2); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:8px 10px; text-align:left; border-bottom:1px solid var(--border); white-space:nowrap; }
+thead th { background:var(--bg2); color:var(--muted); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:8px 10px; text-align:left; border-bottom:1px solid var(--border); white-space:nowrap; }
 tbody tr { border-bottom:1px solid var(--border2); transition:background .15s; }
 tbody tr:hover { background:var(--bg2); }
 tbody tr.triggered { background:rgba(167,139,250,.06); }
@@ -196,19 +195,19 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
 .prog-track { width:70px; height:6px; background:var(--border); border-radius:3px; flex-shrink:0; }
 .prog-fill { height:6px; border-radius:3px; transition:width .4s; }
 .prog-pct { font-size:13px; font-weight:700; min-width:34px; }
-.prog-pct.danger{color:var(--red);} .prog-pct.warn{color:var(--yellow);} .prog-pct.mild{color:var(--blue);} .prog-pct.none{color:var(--muted2);}
+.prog-pct.danger{color:var(--red);} .prog-pct.warn{color:var(--yellow);} .prog-pct.mild{color:var(--blue);} .prog-pct.none{color:var(--muted);}
 
 /* ═══ HIT RATE ═══ */
 .hit-wrap { display:flex; flex-direction:column; gap:3px; min-width:140px; }
-.hit-row { display:flex; align-items:center; gap:5px; font-size:12px; }
-.hit-label { color:var(--muted2); font-size:11px; width:36px; flex-shrink:0; }
-.hit-bar-bg { flex:1; height:4px; background:var(--border); border-radius:3px; }
-.hit-bar-fill { height:4px; border-radius:3px; transition:width .6s; }
+.hit-row { display:flex; align-items:center; gap:5px; font-size:13px; }
+.hit-label { color:var(--muted); font-size:12px; width:36px; flex-shrink:0; font-weight:600; }
+.hit-bar-bg { flex:1; height:5px; background:var(--border); border-radius:3px; }
+.hit-bar-fill { height:5px; border-radius:3px; transition:width .6s; }
 .hit-pct { font-size:13px; font-weight:700; min-width:30px; text-align:right; }
 .hit-pct.high{color:var(--green);} .hit-pct.mid{color:var(--yellow);} .hit-pct.low{color:var(--red);}
-.hit-avg { font-size:11px; color:var(--muted2); }
-.hit-signals { font-size:11px; color:var(--muted2); margin-top:1px; }
-.hit-loading { font-size:12px; color:var(--muted2); font-style:italic; }
+.hit-avg { font-size:12px; color:var(--muted); font-weight:600; }
+.hit-signals { font-size:12px; color:var(--muted); margin-top:1px; font-weight:600; }
+.hit-loading { font-size:13px; color:var(--muted); font-style:italic; }
 
 /* ═══ STATUS / STRIKE ═══ */
 .status-pill { font-size:12px; font-weight:700; letter-spacing:.05em; padding:3px 9px; border-radius:10px; text-transform:uppercase; display:inline-block; }
@@ -217,16 +216,16 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
 .status-watch     { background:rgba(96,165,250,.1);   color:var(--blue);   border:1px solid rgba(96,165,250,.25); }
 .status-waiting   { background:rgba(122,122,154,.1);  color:var(--muted);  border:1px solid rgba(122,122,154,.2); }
 .strike-rec { font-size:13px; color:var(--purple); font-weight:700; }
-.strike-rec.na { color:var(--muted2); font-weight:400; }
+.strike-rec.na { color:var(--muted); font-weight:400; }
 
 /* ═══ NOTES ═══ */
 .note-cell { display:flex; align-items:center; gap:5px; min-width:120px; }
-.note-input { background:transparent; border:none; border-bottom:1px dashed var(--border); color:var(--muted); font-size:12px; font-family:Tahoma,Geneva,sans-serif; width:110px; padding:2px 4px; transition:all .2s; }
+.note-input { background:transparent; border:none; border-bottom:1px dashed var(--border); color:var(--muted); font-size:13px; font-family:Tahoma,Geneva,sans-serif; width:110px; padding:2px 4px; transition:all .2s; }
 .note-input:focus { outline:none; border-bottom-color:var(--purple); color:var(--text); background:var(--bg3); border-radius:3px 3px 0 0; }
-.note-input::placeholder { color:var(--muted2); font-style:italic; }
+.note-input::placeholder { color:var(--muted); font-style:italic; }
 
 /* ═══ LOADING / ANIMS ═══ */
-.loading-row td { text-align:center; padding:40px; color:var(--muted2); font-size:15px; }
+.loading-row td { text-align:center; padding:40px; color:var(--muted); font-size:15px; }
 .spinner { display:inline-block; width:18px; height:18px; margin-right:8px; border:2px solid var(--border); border-top-color:var(--purple); border-radius:50%; animation:spin .8s linear infinite; vertical-align:middle; }
 @keyframes spin { to{transform:rotate(360deg);} }
 @keyframes fg { 0%{background:rgba(52,211,153,.25);}100%{background:transparent;} }
@@ -247,7 +246,7 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
   .m-sym { font-size:17px; font-weight:700; color:var(--text); }
   .m-price { font-size:15px; font-weight:700; }
   .m-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:6px; font-size:13px; }
-  .m-label { color:var(--muted2); margin-right:3px; }
+  .m-label { color:var(--muted); margin-right:3px; font-weight:600; }
   .m-bottom { display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
   .m-note { width:100%; margin-top:6px; }
   .m-note input { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:5px; padding:5px 8px; color:var(--text); font-size:13px; font-family:Tahoma,Geneva,sans-serif; }
@@ -260,10 +259,9 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
 <!-- HEADER -->
 <div class="header">
   <div class="brand-wrap">
-    <div class="brand-icon">SF</div>
+    <div class="brand-icon">⚡</div>
     <div>
       <div class="brand-name">⚡ KB Stock Flip Scanner</div>
-      <div class="brand-sub">Monument Traders Alliance · Overnight Stock Flip Blueprint · Bryan Bottarelli</div>
     </div>
   </div>
   <div class="hright">
@@ -364,7 +362,7 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
     <input class="search-input" id="searchInput" type="text" placeholder="Search ticker… (e.g. JPM, TSLA)" autocomplete="off" oninput="handleSearch(this.value)" onkeydown="searchKeydown(event)">
     <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
   </div>
-  <span style="font-size:13px;color:var(--muted2);">Search existing or type a new ticker to add</span>
+  <span style="font-size:13px;color:var(--muted);font-weight:600;">Search existing or type a new ticker to add</span>
 </div>
 
 <div class="add-panel" id="addPanel">
@@ -399,7 +397,7 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
 
 <!-- FILTER BAR -->
 <div class="filter-bar">
-  <span style="font-size:13px;color:var(--muted2);font-weight:700;">SHOW:</span>
+  <span style="font-size:13px;color:var(--muted);font-weight:700;">SHOW:</span>
   <button class="filter-btn active" onclick="setFilter('all',this)">All <span class="filter-cnt" id="cnt-all">31</span></button>
   <button class="filter-btn" onclick="setFilter('triggered',this)">⚡ Triggered <span class="filter-cnt" id="cnt-triggered">0</span></button>
   <button class="filter-btn" onclick="setFilter('warm',this)">🔶 Warm <span class="filter-cnt" id="cnt-warm">0</span></button>
@@ -494,12 +492,10 @@ function updateClock(){
 
 function updateCountdown(et,day,mins,s){
   const cd=document.getElementById('countdown');
-  // Scan window: 3:30 PM ET = 930 mins, 3:40 PM = 940 mins
   const scanMins=930;
   if(day===0||day===6){cd.textContent='Weekend';cd.className='countdown-time';return;}
   if(mins>=930&&mins<940){cd.textContent='SCAN NOW!';cd.className='countdown-time open-now';return;}
   if(mins>=940){cd.textContent='Done today';cd.className='countdown-time';return;}
-  // Calc time to 3:30 PM
   const totalSecs=scanMins*60-(et.getHours()*3600+et.getMinutes()*60+et.getSeconds());
   if(totalSecs<=0){cd.textContent='SCAN NOW!';cd.className='countdown-time open-now';return;}
   const hh=Math.floor(totalSecs/3600);
@@ -518,7 +514,6 @@ function toggleTheme(){
   document.getElementById('themeBtn').textContent=isDark?'🌙 Dark':'☀️ Light';
   localStorage.setItem('flip_theme',isDark?'light':'dark');
 }
-// Load saved theme
 (()=>{const t=localStorage.getItem('flip_theme')||'dark';document.documentElement.setAttribute('data-theme',t);document.getElementById('themeBtn').textContent=t==='dark'?'☀️ Light':'🌙 Dark';})();
 
 // ══ START ══
@@ -587,7 +582,6 @@ function renderMobileCards(){
 function toggleStar(sym){
   if(starred.has(sym)) starred.delete(sym); else starred.add(sym);
   localStorage.setItem('flip_starred',JSON.stringify([...starred]));
-  // Update both desktop and mobile star buttons
   document.querySelectorAll(`[onclick="toggleStar('${sym}')"]`).forEach(b=>{
     b.classList.toggle('starred',starred.has(sym));
   });
@@ -596,8 +590,6 @@ function toggleStar(sym){
 function saveNote(sym,val){
   if(val) notes[sym]=val; else delete notes[sym];
   localStorage.setItem('flip_notes',JSON.stringify(notes));
-  // Sync both desktop and mobile note inputs
-  const d=document.getElementById(`note-${sym}`);
   const mCards=document.getElementById('mobileCards');
   if(mCards){const inputs=mCards.querySelectorAll(`[onchange*="${sym}"]`);inputs.forEach(i=>i.value=val);}
 }
@@ -674,13 +666,11 @@ function updateRow(sym,price,chgPct,old){
   if(!row&&!mcard)return;
   const ticker=TICKERS.find(t=>t.s===sym);if(!ticker)return;
 
-  // Price + flash
   const pEl=document.getElementById(`price-${sym}`);
   const mpEl=document.getElementById(`mprice-${sym}`);
   if(pEl){pEl.textContent='$'+price.toFixed(2);if(old!==undefined&&row){row.classList.remove('fg','fr');void row.offsetWidth;row.classList.add(price>old?'fg':'fr');}}
   if(mpEl) mpEl.textContent='$'+price.toFixed(2);
 
-  // Chg%
   const cText=(chgPct>=0?'+':'')+chgPct.toFixed(2)+'%';
   const cClass='chg '+(chgPct>0?'pos':chgPct<0?'neg':'neu');
   const cEl=document.getElementById(`chg-${sym}`);
@@ -688,7 +678,6 @@ function updateRow(sym,price,chgPct,old){
   if(cEl){cEl.textContent=cText;cEl.className=cClass;}
   if(mcEl){mcEl.textContent=cText;mcEl.className=cClass;}
 
-  // Progress
   const progress=chgPct<=0?Math.min(100,Math.abs(chgPct)/Math.abs(ticker.trigger)*100):0;
   const pEl2=document.getElementById(`prog-${sym}`);
   const bEl=document.getElementById(`bar-${sym}`);
@@ -699,12 +688,10 @@ function updateRow(sym,price,chgPct,old){
   if(mpEl2){mpEl2.textContent=progress.toFixed(0)+'%';mpEl2.className=pClass;}
   if(bEl){bEl.style.width=Math.min(progress,100)+'%';bEl.style.background=barColor;}
 
-  // Status
   const triggered=progress>=100,warm=progress>=50&&progress<100,watch=progress>=25&&progress<50;
   const newStatus=triggered?'triggered':warm?'warm':watch?'watch':'waiting';
   const prevStatus=prevStatuses[sym];
 
-  // Flash row when newly triggered
   if(newStatus==='triggered'&&prevStatus!=='triggered'){
     if(row){row.classList.add('row-flash');setTimeout(()=>row.classList.remove('row-flash'),3500);}
     if(mcard){mcard.classList.add('row-flash');setTimeout(()=>mcard.classList.remove('row-flash'),3500);}
@@ -758,7 +745,7 @@ function updateRow(sym,price,chgPct,old){
   updateAlerts();updateCounts();applyFilter();savePrices();
 }
 
-// ══ CHECKLIST SCAN ══
+// ══ CHECKLIST SCAN — SPY fix: retry until SPY price is loaded ══
 let lastTriggeredSet='';
 async function updateAlerts(){
   const triggered=TICKERS.filter(t=>{
@@ -787,17 +774,47 @@ async function updateAlerts(){
       </div>
       <div id="csn-${t.s}"></div>
     </div>`).join('');
+
   const key=document.getElementById('apiKey').value.trim();
   const today=new Date().toISOString().slice(0,10);
+
+  // ── SPY FIX: wait up to 10s for SPY price before running sector check ──
+  async function waitForSpy(maxWaitMs=10000){
+    const start=Date.now();
+    while(!prices['SPY']?.price && Date.now()-start<maxWaitMs){
+      await new Promise(r=>setTimeout(r,500));
+    }
+    return prices['SPY']||null;
+  }
+
   await Promise.allSettled(triggered.map(async t=>{
     const p=prices[t.s];
     const priceEl=document.getElementById(`csp-${t.s}`);
     if(priceEl&&p) priceEl.textContent=`$${p.price.toFixed(2)} (${p.chgPct>=0?'+':''}${p.chgPct.toFixed(2)}%)`;
     let flags=0;
+
+    // Earnings check
     try{const r=await fetch(`https://finnhub.io/api/v1/calendar/earnings?from=${today}&to=${today}&symbol=${t.s}&token=${key}`,{signal:AbortSignal.timeout(6000)});const d=await r.json();const has=d?.earningsCalendar?.length>0;const el=document.getElementById(`cc-earn-${t.s}`);if(el){if(has){flags++;el.className='cs-check fail';el.innerHTML=`<span class="ci">❌</span><span class="ct">Earnings today — SKIP TRADE<span class="sub">High gap risk</span></span>`;}else{el.className='cs-check pass';el.innerHTML=`<span class="ci">✅</span><span class="ct">No earnings today<span class="sub">Calendar clear</span></span>`;}}}catch(e){const el=document.getElementById(`cc-earn-${t.s}`);if(el){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Earnings check unavailable<span class="sub">Verify manually</span></span>`;}}
+
+    // Volume check
     try{const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=${t.s}&token=${key}`,{signal:AbortSignal.timeout(6000)});const d=await r.json();const el=document.getElementById(`cc-vol-${t.s}`);if(el&&d&&d.h&&d.l){const spread=((d.h-d.l)/d.l*100).toFixed(1);const ok=spread>1.5;if(ok){el.className='cs-check pass';el.innerHTML=`<span class="ci">✅</span><span class="ct">Volume elevated (range ${spread}%)<span class="sub">Good options liquidity</span></span>`;}else{el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Volume may be light (range ${spread}%)<span class="sub">Check bid/ask spread</span></span>`;}}}catch(e){const el=document.getElementById(`cc-vol-${t.s}`);if(el){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Volume check unavailable</span>`;}}
-    try{const spyPrice=prices['SPY'];const el=document.getElementById(`cc-sec-${t.s}`);if(el){if(spyPrice&&spyPrice.chgPct<=-1.5){flags++;el.className='cs-check fail';el.innerHTML=`<span class="ci">❌</span><span class="ct">Market down ${spyPrice.chgPct.toFixed(2)}% (SPY)<span class="sub">Possible sector collapse — caution</span></span>`;}else if(spyPrice&&spyPrice.chgPct<=-0.75){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Market soft — SPY ${spyPrice.chgPct.toFixed(2)}%<span class="sub">Watch for broader weakness</span></span>`;}else if(spyPrice){el.className='cs-check pass';el.innerHTML=`<span class="ci">✅</span><span class="ct">No sector collapse — SPY ${spyPrice.chgPct>=0?'+':''}${spyPrice.chgPct.toFixed(2)}%<span class="sub">Market stable</span></span>`;}else{el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">SPY not loaded yet</span>`;}}}catch(e){}
-    try{const r=await fetch(`https://finnhub.io/api/v1/company-news?symbol=${t.s}&from=${today}&to=${today}&token=${key}`,{signal:AbortSignal.timeout(6000)});const d=await r.json();const el=document.getElementById(`cc-news-${t.s}`);const nel=document.getElementById(`csn-${t.s}`);const RED=['resign','scandal','fraud','lawsuit','investigation','recall','downgrade','bankruptcy','warning','miss','layoff','cut'];const top=(d||[]).slice(0,5);if(el){const combined=top.map(n=>n.headline.toLowerCase()).join(' ');const bad=RED.some(w=>combined.includes(w));if(bad){flags++;el.className='cs-check fail';el.innerHTML=`<span class="ci">🔴</span><span class="ct">Negative news detected<span class="sub">Read headlines below before entry</span></span>`;}else if(top.length===0){el.className='cs-check pass';el.innerHTML=`<span class="ci">✅</span><span class="ct">No news today<span class="sub">No catalyst risk</span></span>`;}else{el.className='cs-check pass';el.innerHTML=`<span class="ci">✅</span><span class="ct">News appears clean<span class="sub">No red flags detected</span></span>`;}}if(nel&&top.length>0){nel.innerHTML=`<div class="cs-news-title">📰 Today's Headlines</div>`+top.map(n=>`<div class="cs-news-item"><a href="${n.url}" target="_blank">${n.headline}</a> <span style="font-size:11px;color:var(--muted2)">— ${n.source}</span></div>`).join('');}}catch(e){const el=document.getElementById(`cc-news-${t.s}`);if(el){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">News check unavailable<span class="sub">Check manually</span></span>`;}}
+
+    // Sector check — FIXED: wait for SPY price
+    try{
+      const el=document.getElementById(`cc-sec-${t.s}`);
+      if(el){
+        el.innerHTML=`<span class="ci">⏳</span><span class="ct">Waiting for SPY price…</span>`;
+        const spyPrice=await waitForSpy();
+        if(spyPrice&&spyPrice.chgPct<=-1.5){flags++;el.className='cs-check fail';el.innerHTML=`<span class="ci">❌</span><span class="ct">Market down ${spyPrice.chgPct.toFixed(2)}% (SPY)<span class="sub">Possible sector collapse — caution</span></span>`;}
+        else if(spyPrice&&spyPrice.chgPct<=-0.75){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">Market soft — SPY ${spyPrice.chgPct.toFixed(2)}%<span class="sub">Watch for broader weakness</span></span>`;}
+        else if(spyPrice){el.className='cs-check pass';el.innerHTML=`<span class="ci">✅</span><span class="ct">No sector collapse — SPY ${spyPrice.chgPct>=0?'+':''}${spyPrice.chgPct.toFixed(2)}%<span class="sub">Market stable</span></span>`;}
+        else{el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">SPY price unavailable<span class="sub">Check market conditions manually</span></span>`;}
+      }
+    }catch(e){}
+
+    // News check
+    try{const r=await fetch(`https://finnhub.io/api/v1/company-news?symbol=${t.s}&from=${today}&to=${today}&token=${key}`,{signal:AbortSignal.timeout(6000)});const d=await r.json();const el=document.getElementById(`cc-news-${t.s}`);const nel=document.getElementById(`csn-${t.s}`);const RED=['resign','scandal','fraud','lawsuit','investigation','recall','downgrade','bankruptcy','warning','miss','layoff','cut'];const top=(d||[]).slice(0,5);if(el){const combined=top.map(n=>n.headline.toLowerCase()).join(' ');const bad=RED.some(w=>combined.includes(w));if(bad){flags++;el.className='cs-check fail';el.innerHTML=`<span class="ci">🔴</span><span class="ct">Negative news detected<span class="sub">Read headlines below before entry</span></span>`;}else if(top.length===0){el.className='cs-check pass';el.innerHTML=`<span class="ci">✅</span><span class="ct">No news today<span class="sub">No catalyst risk</span></span>`;}else{el.className='cs-check pass';el.innerHTML=`<span class="ci">✅</span><span class="ct">News appears clean<span class="sub">No red flags detected</span></span>`;}}if(nel&&top.length>0){nel.innerHTML=`<div class="cs-news-title">📰 Today's Headlines</div>`+top.map(n=>`<div class="cs-news-item"><a href="${n.url}" target="_blank">${n.headline}</a> <span style="font-size:11px;color:var(--muted)">— ${n.source}</span></div>`).join('');}}catch(e){const el=document.getElementById(`cc-news-${t.s}`);if(el){el.className='cs-check warn';el.innerHTML=`<span class="ci">⚠️</span><span class="ct">News check unavailable<span class="sub">Check manually</span></span>`;}}
+
     const vEl=document.getElementById(`csv-${t.s}`);
     if(vEl){if(flags===0){vEl.textContent='✅ CLEAR TO TRADE';vEl.className='cs-verdict go';}else if(flags===1){vEl.textContent='⚠️ PROCEED WITH CAUTION';vEl.className='cs-verdict caution';}else{vEl.textContent='🛑 DO NOT TRADE';vEl.className='cs-verdict stop';}}
   }));
@@ -833,7 +850,6 @@ function sortTable(){
   rows.sort((a,b)=>{
     const sa=STATUS_ORD[a.dataset.status||'waiting']??3;
     const sb=STATUS_ORD[b.dataset.status||'waiting']??3;
-    // Stars float to top within their group
     const stA=starred.has(a.dataset.sym)?-1:0;
     const stB=starred.has(b.dataset.sym)?-1:0;
     if(sa!==sb) return sa-sb;
