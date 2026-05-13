@@ -83,6 +83,41 @@ body {
 .exit-card { background:#12122a; border:1px solid #1e1e35; border-radius:7px; padding:8px 12px; }
 .exit-scenario { font-size:15px; font-weight:700; margin-bottom:3px; }
 .exit-action { font-size:15px; color:#7a7a9a; }
+/* SEARCH BAR */
+.search-bar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.search-wrap{position:relative;flex:1;min-width:220px;max-width:380px;}
+.search-input{width:100%;background:#0d0d1a;border:1px solid #2a2a3e;color:#e2e2f0;
+  border-radius:8px;padding:7px 14px 7px 36px;font-size:15px;font-family:Tahoma,Geneva,sans-serif;transition:border-color .2s;}
+.search-input:focus{outline:none;border-color:#a78bfa;}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#7a7a9a;font-size:15px;pointer-events:none;}
+.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#7a7a9a;font-size:16px;cursor:pointer;display:none;padding:0;}
+.search-clear:hover{color:#e2e2f0;}
+.add-panel{background:#0d0d1a;border:1px solid rgba(167,139,250,.5);border-radius:10px;
+  padding:14px 18px;margin-bottom:12px;display:none;align-items:center;gap:10px;flex-wrap:wrap;}
+.add-panel-msg{font-size:15px;color:#7a7a9a;}
+.add-panel-sym{font-size:16px;font-weight:700;color:#a78bfa;}
+.btn-add{background:#a78bfa;color:#0a0a0f;border:none;border-radius:6px;padding:6px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:Tahoma,Geneva,sans-serif;}
+.btn-add:hover{background:#bba8fb;}
+.btn-save-perm{background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.4);color:#60a5fa;border-radius:6px;padding:6px 16px;font-size:15px;font-weight:700;cursor:pointer;font-family:Tahoma,Geneva,sans-serif;}
+.btn-save-perm:hover{background:rgba(96,165,250,.25);}
+.btn-cancel-s{background:#1a1a2e;border:1px solid #2a2a3e;color:#7a7a9a;border-radius:6px;padding:6px 14px;font-size:15px;cursor:pointer;font-family:Tahoma,Geneva,sans-serif;}
+.btn-cancel-s:hover{color:#e2e2f0;}
+.custom-tag{font-size:12px;color:#60a5fa;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25);border-radius:3px;padding:1px 5px;margin-left:4px;}
+/* SAVE PERMANENTLY MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#0d0d1a;border:1px solid #a78bfa;border-radius:14px;padding:24px;max-width:640px;width:100%;box-shadow:0 0 40px rgba(167,139,250,.2);}
+.modal-title{font-size:17px;font-weight:700;color:#a78bfa;margin-bottom:6px;}
+.modal-sub{font-size:14px;color:#5a5a7a;margin-bottom:14px;line-height:1.5;}
+.modal-steps{font-size:14px;color:#7a7a9a;margin-bottom:14px;line-height:1.8;}
+.modal-steps strong{color:#e2e2f0;}
+.modal-code{background:#06060f;border:1px solid #2a2a3e;border-radius:8px;padding:12px;font-family:monospace;font-size:13px;color:#a78bfa;white-space:pre-wrap;word-break:break-all;max-height:180px;overflow-y:auto;margin-bottom:12px;}
+.modal-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-copy{background:#a78bfa;color:#0a0a0f;border:none;border-radius:6px;padding:8px 20px;font-size:15px;font-weight:700;cursor:pointer;font-family:Tahoma,Geneva,sans-serif;}
+.btn-copy:hover{background:#bba8fb;}
+.btn-copy.copied{background:#60a5fa;color:#fff;}
+.btn-close-modal{background:#1a1a2e;border:1px solid #2a2a3e;color:#7a7a9a;border-radius:6px;padding:8px 16px;font-size:15px;cursor:pointer;font-family:Tahoma,Geneva,sans-serif;}
+.btn-close-modal:hover{color:#e2e2f0;}
 .filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; align-items:center; }
 .filter-btn { background:#12122a; border:1px solid #2a2a3e; color:#7a7a9a;
   border-radius:6px; padding:5px 13px; font-size:15px; cursor:pointer;
@@ -213,6 +248,47 @@ td { padding:7px 10px; vertical-align:middle; white-space:nowrap; }
 <div class="alert-box" id="alertBox">
   <div class="alert-title">🚨 FLIP SETUP DETECTED — Confirm before entry (3:30–3:40 PM ET)</div>
   <ul class="alert-list" id="alertList"></ul>
+</div>
+
+<!-- SEARCH BAR -->
+<div class="search-bar">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="searchInput" type="text" placeholder="Search ticker… (e.g. JPM, TSLA)" autocomplete="off" oninput="handleSearch(this.value)" onkeydown="searchKeydown(event)">
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+  </div>
+  <span style="font-size:14px;color:#5a5a7a;">Search existing stocks or type a new ticker to add it</span>
+</div>
+
+<!-- ADD STOCK PANEL -->
+<div class="add-panel" id="addPanel">
+  <span class="add-panel-msg">📊 <span class="add-panel-sym" id="addSym"></span> is not on the scanner —</span>
+  <button class="btn-add" id="btnAdd" onclick="addCustomStock()">+ Add for This Session</button>
+  <button class="btn-save-perm" id="btnSavePerm" onclick="showSavePermanently()">💾 Save Permanently</button>
+  <button class="btn-cancel-s" onclick="clearSearch()">Cancel</button>
+</div>
+
+<!-- SAVE PERMANENTLY MODAL -->
+<div class="modal-overlay" id="saveModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-title">💾 Save Permanently to Scanner</div>
+    <div class="modal-sub">Copy the line below, then paste it into the <strong>TICKERS</strong> list in your GitHub file to make this stock permanent.</div>
+    <div class="modal-code" id="modalCode"></div>
+    <div class="modal-steps">
+      <strong>Steps:</strong><br>
+      1. Click <strong>Copy Code</strong> below<br>
+      2. Go to <strong>github.com/ksnick1/KBStockFlipScanner</strong><br>
+      3. Click <strong>index.html</strong> → pencil ✏️ → <strong>Edit in place</strong><br>
+      4. Press <strong>Ctrl+F</strong> and search for <strong>{s:'CVX'</strong><br>
+      5. Paste the copied line on a new line right above or below it<br>
+      6. Click <strong>Commit changes</strong> → <strong>Commit changes</strong><br>
+      7. Wait 2 minutes, then refresh — your stock will be there permanently!
+    </div>
+    <div class="modal-btns">
+      <button class="btn-copy" id="btnCopyCode" onclick="copyModalCode()">📋 Copy Code</button>
+      <button class="btn-close-modal" onclick="closeModal()">Close</button>
+    </div>
+  </div>
 </div>
 
 <div class="filter-bar">
@@ -366,9 +442,32 @@ function restorePrices(){
     Object.keys(saved).forEach(sym=>{
       prices[sym]=saved[sym];
       const p=saved[sym];
-      updateRow(sym,p.price,p.chgPct,undefined);
+      updateRow(sym,Number(p.price),Number(p.chgPct)||0,undefined);
     });
   }catch(e){}
+}
+
+// ── Fetch closing prices via Finnhub REST (works open or closed, 24/7) ──
+async function fetchClosingPrices(key){
+  const BATCH=6, DELAY=300;
+  for(let i=0;i<TICKERS.length;i+=BATCH){
+    const batch=TICKERS.slice(i,i+BATCH);
+    await Promise.allSettled(batch.map(async t=>{
+      try{
+        const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=${t.s}&token=${key}`,{signal:AbortSignal.timeout(6000)});
+        if(!r.ok) return;
+        const d=await r.json();
+        if(!d||!d.c) return;
+        const price=d.c;
+        const prevClose=d.pc||d.c;
+        const chgPct=prevClose?((price-prevClose)/prevClose*100):0;
+        const old=prices[t.s]?.price;
+        prices[t.s]={price,prevClose,chgPct};
+        updateRow(t.s,price,chgPct,old);
+      }catch(e){}
+    }));
+    if(i+BATCH<TICKERS.length) await new Promise(r=>setTimeout(r,DELAY));
+  }
 }
 
 function updateRow(sym,price,chgPct,old){
@@ -441,14 +540,112 @@ function updateCounts(){
   document.getElementById('powerCount').textContent=trig;
 }
 
+// ══════════════════════════════════════════════
+//  SAVE PERMANENTLY MODAL
+// ══════════════════════════════════════════════
+function showSavePermanently(){
+  const sym = document.getElementById('addSym').textContent.trim();
+  if(!sym) return;
+  const line = `  {s:'${sym}',   trigger:-3.00},  // ← adjust trigger % to match the blueprint`;
+  document.getElementById('modalCode').textContent = line;
+  document.getElementById('saveModal').classList.add('open');
+}
+function copyModalCode(){
+  const code = document.getElementById('modalCode').textContent;
+  navigator.clipboard.writeText(code).then(()=>{
+    const btn = document.getElementById('btnCopyCode');
+    btn.textContent='✅ Copied!'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='📋 Copy Code'; btn.classList.remove('copied'); }, 2500);
+  });
+}
+function closeModal(){
+  document.getElementById('saveModal').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════
+//  SEARCH + ADD STOCK
+// ══════════════════════════════════════════════
+let customStocks=[];
+
+function handleSearch(val){
+  const q=val.trim().toUpperCase();
+  document.getElementById('searchClear').style.display=q?'block':'none';
+  const addPanel=document.getElementById('addPanel');
+  if(!q){ document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>r.style.opacity='1'); applyFilter(); addPanel.style.display='none'; return; }
+  const allSyms=TICKERS.map(t=>t.s).concat(customStocks);
+  const match=allSyms.find(s=>s===q);
+  if(match){
+    document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>{ r.style.display=r.dataset.sym===q?'':'none'; r.style.opacity='1'; });
+    addPanel.style.display='none';
+  } else {
+    document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>{ r.style.display=''; r.style.opacity=r.dataset.sym.startsWith(q)?'1':'0.3'; });
+    if(q.length>=1&&q.length<=6&&/^[A-Z.\-]+$/.test(q)){
+      document.getElementById('addSym').textContent=q;
+      document.getElementById('btnAdd').dataset.sym=q;
+      addPanel.style.display='flex';
+    } else { addPanel.style.display='none'; }
+  }
+}
+function searchKeydown(e){
+  if(e.key==='Enter'){ const q=document.getElementById('searchInput').value.trim().toUpperCase(); if(q&&!TICKERS.map(t=>t.s).concat(customStocks).includes(q)) addCustomStock(q); }
+  if(e.key==='Escape') clearSearch();
+}
+function clearSearch(){
+  document.getElementById('searchInput').value='';
+  document.getElementById('searchClear').style.display='none';
+  document.getElementById('addPanel').style.display='none';
+  document.querySelectorAll('#tbody tr[data-sym]').forEach(r=>r.style.opacity='1');
+  applyFilter();
+}
+function addCustomStock(sym){
+  sym=sym||document.getElementById('btnAdd').dataset.sym;
+  if(!sym) return;
+  sym=sym.toUpperCase();
+  if(customStocks.includes(sym)||TICKERS.find(t=>t.s===sym)){
+    clearSearch();
+    const row=document.getElementById(`row-${sym}`);
+    if(row){row.scrollIntoView({behavior:'smooth',block:'center'});row.classList.add('fg');setTimeout(()=>row.classList.remove('fg'),1000);}
+    return;
+  }
+  customStocks.push(sym);
+  // Default trigger -3% for custom stocks
+  const customTrigger=-3.00;
+  const tbody=document.getElementById('tbody');
+  const tr=document.createElement('tr');
+  tr.id=`row-${sym}`; tr.dataset.sym=sym; tr.dataset.status='waiting';
+  tr.innerHTML=`
+    <td><div class="sym-wrap">
+      <a class="sym" href="https://www.tradingview.com/chart/?symbol=${sym}" target="_blank">${sym}</a>
+      <span class="custom-tag">+ Added</span>
+      <span class="trig-badge" id="badge-${sym}" style="display:none">⚡ TRIGGERED</span>
+      <a class="chart-btn" href="https://www.tradingview.com/chart/?symbol=${sym}" target="_blank">📈 Chart</a>
+    </div></td>
+    <td><span class="price" id="price-${sym}">—</span></td>
+    <td><span class="chg neu" id="chg-${sym}">—</span></td>
+    <td><span class="trig-pct">${customTrigger.toFixed(2)}%</span></td>
+    <td><div class="prog-wrap"><div class="prog-track"><div class="prog-fill" id="bar-${sym}" style="width:0%;background:#5a5a7a"></div></div><span class="prog-pct none" id="prog-${sym}">0%</span></div></td>
+    <td><span class="strike-rec na" id="strike-${sym}">—</span></td>
+    <td><span class="status-pill status-waiting" id="status-${sym}">Waiting</span></td>`;
+  tbody.appendChild(tr);
+  // Push to TICKERS so updateRow works
+  TICKERS.push({s:sym, trigger:customTrigger});
+  clearSearch();
+  tr.scrollIntoView({behavior:'smooth',block:'center'});
+  if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:'subscribe',symbol:sym}));
+  updateCounts();
+}
+
 window.addEventListener('load',()=>{
   const baked='d7ubki9r01qnv95n0argd7ubki9r01qnv95n0as0';
   const saved=localStorage.getItem('finnhub_key')||baked;
   document.getElementById('apiKey').value=saved;
-  // Render skeleton first, then restore last-known prices immediately
+  // 1. Render rows
   renderSkeleton();
+  // 2. Restore cached prices instantly
   restorePrices();
-  // Then connect live
+  // 3. Fetch fresh closing prices from Finnhub REST (works open or closed, 24/7)
+  fetchClosingPrices(saved);
+  // 4. Connect WebSocket for live ticks during market hours
   connectWS(saved);
   if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
 });
